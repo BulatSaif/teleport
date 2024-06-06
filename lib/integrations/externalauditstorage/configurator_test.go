@@ -34,6 +34,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/api/types/externalauditstorage"
 	"github.com/gravitational/teleport/api/types/header"
@@ -102,8 +103,10 @@ func TestConfiguratorIsUsed(t *testing.T) {
 			name: "cloud enterprise without config",
 			modules: &modules.TestModules{
 				TestFeatures: modules.Features{
-					Cloud:                true,
-					ExternalAuditStorage: true,
+					Cloud: true,
+					Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+						teleport.ExternalAuditStorage: {Enabled: true},
+					},
 				},
 			},
 			wantIsUsed: false,
@@ -112,8 +115,10 @@ func TestConfiguratorIsUsed(t *testing.T) {
 			name: "cloud enterprise with only draft",
 			modules: &modules.TestModules{
 				TestFeatures: modules.Features{
-					Cloud:                true,
-					ExternalAuditStorage: true,
+					Cloud: true,
+					Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+						teleport.ExternalAuditStorage: {Enabled: true},
+					},
 				},
 			},
 			// Just create draft, External Audit Storage should be disabled, it's
@@ -129,8 +134,10 @@ func TestConfiguratorIsUsed(t *testing.T) {
 			name: "cloud enterprise with cluster config",
 			modules: &modules.TestModules{
 				TestFeatures: modules.Features{
-					Cloud:                true,
-					ExternalAuditStorage: true,
+					Cloud: true,
+					Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+						teleport.ExternalAuditStorage: {Enabled: true},
+					},
 				},
 			},
 			// Create draft and promote it to cluster.
@@ -178,8 +185,10 @@ func TestCredentialsCache(t *testing.T) {
 
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Cloud:                true,
-			ExternalAuditStorage: true,
+			Cloud: true,
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.ExternalAuditStorage: {Enabled: true},
+			},
 		},
 	})
 
@@ -338,8 +347,10 @@ func TestDraftConfigurator(t *testing.T) {
 
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Cloud:                true,
-			ExternalAuditStorage: true,
+			Cloud: true,
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.ExternalAuditStorage: {Enabled: true},
+			},
 		},
 	})
 

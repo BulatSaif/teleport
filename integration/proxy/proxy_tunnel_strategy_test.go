@@ -31,6 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	apidefaults "github.com/gravitational/teleport/api/defaults"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/integration/helpers"
@@ -158,7 +159,11 @@ func TestProxyTunnelStrategyProxyPeering(t *testing.T) {
 	// This test cannot run in parallel as set module changes the global state.
 	modules.SetTestModules(t, &modules.TestModules{
 		TestBuildType: modules.BuildEnterprise,
-		TestFeatures:  modules.Features{DB: true},
+		TestFeatures: modules.Features{
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.DB: {Enabled: true},
+			},
+		},
 	})
 
 	p := newProxyTunnelStrategy(t, "proxy-tunnel-proxy-peer",

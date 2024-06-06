@@ -33,6 +33,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/api/utils/keys"
@@ -292,7 +293,9 @@ func TestHardwareKeyApp(t *testing.T) {
 	testModules := &modules.TestModules{
 		TestBuildType: modules.BuildEnterprise,
 		TestFeatures: modules.Features{
-			App: true,
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.App: {Enabled: true},
+			},
 		},
 	}
 	modules.SetTestModules(t, testModules)

@@ -1345,7 +1345,9 @@ func testKubeEphemeralContainers(t *testing.T, suite *KubeSuite) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestBuildType: modules.BuildEnterprise,
 		TestFeatures: modules.Features{
-			Kubernetes: true,
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.K8s: {Enabled: true},
+			},
 		},
 	})
 

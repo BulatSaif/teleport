@@ -55,7 +55,9 @@ func TestMain(m *testing.M) {
 	modules.SetModules(&modules.TestModules{
 		TestBuildType: modules.BuildEnterprise,
 		TestFeatures: modules.Features{
-			HSM: true,
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.HSM: {Enabled: true},
+			},
 		},
 	})
 

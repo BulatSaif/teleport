@@ -30,6 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/client/proto"
 	usageeventsv1 "github.com/gravitational/teleport/api/gen/proto/go/usageevents/v1"
 	"github.com/gravitational/teleport/api/types"
@@ -398,8 +399,10 @@ func TestAccessLists(t *testing.T) {
 			modules.SetTestModules(t, &modules.TestModules{
 				TestBuildType: modules.BuildEnterprise,
 				TestFeatures: modules.Features{
-					Cloud:                      test.cloud,
-					IdentityGovernanceSecurity: true,
+					Cloud: test.cloud,
+					Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+						teleport.Identity: {Enabled: true},
+					},
 				},
 			})
 

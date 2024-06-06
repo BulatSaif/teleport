@@ -43,6 +43,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/profile"
 	"github.com/gravitational/teleport/api/types"
 	apiutils "github.com/gravitational/teleport/api/utils"
@@ -320,7 +321,9 @@ func TestKubeSelection(t *testing.T) {
 		&modules.TestModules{
 			TestBuildType: modules.BuildEnterprise,
 			TestFeatures: modules.Features{
-				Kubernetes: true,
+				Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+					teleport.K8s: {Enabled: true},
+				},
 			},
 		},
 	)

@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/testing/protocmp"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/constants"
 	clusterconfigpb "github.com/gravitational/teleport/api/gen/proto/go/teleport/clusterconfig/v1"
 	"github.com/gravitational/teleport/api/types"
@@ -1798,8 +1799,8 @@ func TestGetAccessGraphConfig(t *testing.T) {
 			testSetup: func(t *testing.T) {
 				m := modules.TestModules{
 					TestFeatures: modules.Features{
-						Policy: modules.PolicyFeature{
-							Enabled: true,
+						Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+							teleport.Policy: {Enabled: true},
 						},
 					},
 				}
@@ -1822,8 +1823,8 @@ func TestGetAccessGraphConfig(t *testing.T) {
 			testSetup: func(t *testing.T) {
 				m := modules.TestModules{
 					TestFeatures: modules.Features{
-						Policy: modules.PolicyFeature{
-							Enabled: true,
+						Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+							teleport.Policy: {Enabled: true},
 						},
 					},
 				}

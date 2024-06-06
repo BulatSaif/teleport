@@ -108,7 +108,11 @@ func TestDatabaseAccessSeparateListeners(t *testing.T) {
 func (p *DatabasePack) testIPPinning(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestBuildType: modules.BuildEnterprise,
-		TestFeatures:  modules.Features{DB: true},
+		TestFeatures: modules.Features{
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.DB: {Enabled: true},
+			},
+		},
 	})
 
 	type testCase struct {

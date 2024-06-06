@@ -39,7 +39,9 @@ import (
 func TestProcessKubeCSR(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Kubernetes: true, // test requires kube feature is enabled
+			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+				teleport.K8s: {Enabled: true}, // test requires kube feature is enabled
+			},
 		},
 	})
 

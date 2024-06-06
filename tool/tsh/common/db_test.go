@@ -76,7 +76,9 @@ func TestTshDB(t *testing.T) {
 		&modules.TestModules{
 			TestBuildType: modules.BuildEnterprise,
 			TestFeatures: modules.Features{
-				DB: true,
+				Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+					teleport.DB: {Enabled: true},
+				},
 			},
 		},
 	)

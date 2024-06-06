@@ -23,8 +23,10 @@ import (
 	"os"
 	"testing"
 
+	"github.com/gravitational/teleport/api/client/proto"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/lib/auth"
@@ -85,4 +87,108 @@ func TestValidateSessionRecordingConfigOnCloud(t *testing.T) {
 	recConfig.SetMode(types.RecordAtProxy)
 	_, err = testServer.AuthServer.UpsertSessionRecordingConfig(ctx, recConfig)
 	require.EqualError(t, err, "cannot set proxy recording mode on Cloud")
+}
+
+func TestFeatures_ToProto(t *testing.T) {
+	expected := &proto.Features{
+		Assist:                  false,
+		CustomTheme:             "dark",
+		ProductType:             1,
+		SupportType:             1,
+		AccessControls:          true,
+		AccessGraph:             true,
+		AdvancedAccessWorkflows: true,
+		App:                     true,
+		AutomaticUpgrades:       true,
+		Cloud:                   true,
+		DB:                      true,
+		Desktop:                 true,
+		ExternalAuditStorage:    true,
+		FeatureHiding:           true,
+		HSM:                     true,
+		IdentityGovernance:      true,
+		IsStripeManaged:         true,
+		IsUsageBased:            true,
+		JoinActiveSessions:      true,
+		Kubernetes:              true,
+		MobileDeviceManagement:  true,
+		OIDC:                    true,
+		Plugins:                 true,
+		Questionnaire:           true,
+		RecoveryCodes:           true,
+		SAML:                    true,
+
+		AccessList:       &proto.AccessListFeature{CreateLimit: 111},
+		AccessMonitoring: &proto.AccessMonitoringFeature{Enabled: true, MaxReportRangeLimit: 2113},
+		AccessRequests:   &proto.AccessRequestsFeature{MonthlyRequestLimit: 39},
+		DeviceTrust:      &proto.DeviceTrustFeature{Enabled: true, DevicesUsageLimit: 103},
+		Policy:           &proto.PolicyFeature{Enabled: true},
+	}
+
+	f := modules.Features{
+		CustomTheme:             "dark",
+		ProductType:             1,
+		SupportType:             1,
+		AccessControls:          true,
+		AccessGraph:             true,
+		AdvancedAccessWorkflows: true,
+		Assist:                  true,
+		AutomaticUpgrades:       true,
+		Cloud:                   true,
+		IsStripeManaged:         true,
+		IsUsageBasedBilling:     true,
+		Plugins:                 true,
+		Questionnaire:           true,
+		RecoveryCodes:           true,
+		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+			teleport.AccessLists:            {Enabled: true, Limit: 111},
+			teleport.AccessMonitoring:       {Enabled: true, Limit: 2113},
+			teleport.AccessRequests:         {Enabled: true, Limit: 39},
+			teleport.App:                    {Enabled: true, Limit: 3},
+			teleport.CloudAuditLogRetention: {Enabled: true, Limit: 3},
+			teleport.DB:                     {Enabled: true, Limit: 3},
+			teleport.Desktop:                {Enabled: true, Limit: 3},
+			teleport.DeviceTrust:            {Enabled: true, Limit: 103},
+			teleport.ExternalAuditStorage:   {Enabled: true, Limit: 3},
+			teleport.FeatureHiding:          {Enabled: true, Limit: 3},
+			teleport.HSM:                    {Enabled: true, Limit: 3},
+			teleport.Identity:               {Enabled: true, Limit: 3},
+			teleport.JoinActiveSessions:     {Enabled: true, Limit: 3},
+			teleport.K8s:                    {Enabled: true, Limit: 3},
+			teleport.MobileDeviceManagement: {Enabled: true, Limit: 3},
+			teleport.OIDC:                   {Enabled: true, Limit: 3},
+			teleport.OktaSCIM:               {Enabled: true, Limit: 3},
+			teleport.OktaUserSync:           {Enabled: true, Limit: 3},
+			teleport.Policy:                 {Enabled: true, Limit: 3},
+			teleport.SAML:                   {Enabled: true, Limit: 3},
+			teleport.SessionLocks:           {Enabled: true, Limit: 3},
+			teleport.UpsellAlert:            {Enabled: true, Limit: 3},
+			teleport.UsageReporting:         {Enabled: true, Limit: 3},
+		},
+	}
+
+	actual := f.ToProto()
+	require.Equal(t, expected, actual)
+}
+
+func TestFeatures_GetEntitlement(t *testing.T) {
+	f := modules.Features{
+		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
+			teleport.AccessLists: {Enabled: true, Limit: 111},
+			teleport.K8s:         {Enabled: false},
+			teleport.SAML:        {},
+		},
+	}
+
+	actual := f.GetEntitlement(teleport.AccessLists)
+	require.Equal(t, modules.EntitlementInfo{Enabled: true, Limit: 111}, actual)
+
+	actual = f.GetEntitlement(teleport.K8s)
+	require.Equal(t, modules.EntitlementInfo{Enabled: false}, actual)
+
+	actual = f.GetEntitlement(teleport.SAML)
+	require.Equal(t, modules.EntitlementInfo{}, actual)
+
+	actual = f.GetEntitlement(teleport.UsageReporting)
+	require.Equal(t, modules.EntitlementInfo{}, actual)
 }
