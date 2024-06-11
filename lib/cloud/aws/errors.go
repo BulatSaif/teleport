@@ -88,6 +88,55 @@ func ConvertIAMError(err error) error {
 	return ConvertRequestFailureError(err)
 }
 
+type errorWithCode interface {
+	error
+	ErrorCode() string
+}
+
+// ConvertSTSError converts aws-sdk-go-v2/service/sts errors.
+func ConvertSTSError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var errorWithCode errorWithCode
+	if errors.As(err, &errorWithCode) {
+		switch errorWithCode.ErrorCode() {
+		case "ExpiredTokenException":
+			return trace.AccessDenied(errorWithCode.Error())
+		case "IDPCommunicationError":
+			return trace.ConnectionProblem(errorWithCode, errorWithCode.Error())
+		case "IDPRejectedClaim":
+			return trace.AccessDenied(errorWithCode.Error())
+		case "InvalidAuthorizationMessageException":
+			return trace.BadParameter(errorWithCode.Error())
+		case "InvalidIdentityToken":
+			return trace.AccessDenied(errorWithCode.Error())
+		case "MalformedPolicyDocument":
+			return trace.BadParameter(errorWithCode.Error())
+		case "PackedPolicyTooLarge":
+			return trace.BadParameter(errorWithCode.Error())
+		case "RegionDisabledException":
+			return trace.BadParameter(errorWithCode.Error())
+		}
+	}
+
+	return convertGenericSDKV2error(err)
+}
+
+func convertGenericSDKV2error(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	var re *awshttp.ResponseError
+	if errors.As(err, &re) {
+		return convertRequestFailureErrorFromStatusCode(re.HTTPStatusCode(), re.Err)
+	}
+
+	return err
+}
+
 // ConvertIAMv2Error converts common errors from IAM clients to trace errors.
 func ConvertIAMv2Error(err error) error {
 	if err == nil {
@@ -109,10 +158,5 @@ func ConvertIAMv2Error(err error) error {
 		return trace.BadParameter(*malformedPolicyDocument.Message)
 	}
 
-	var re *awshttp.ResponseError
-	if errors.As(err, &re) {
-		return convertRequestFailureErrorFromStatusCode(re.HTTPStatusCode(), re.Err)
-	}
-
-	return err
+	return convertGenericSDKV2error(err)
 }
