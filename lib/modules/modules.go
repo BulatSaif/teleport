@@ -98,53 +98,63 @@ type EntitlementInfo struct {
 }
 
 // ToProto converts Features into proto.Features
-// todo (michellescripts) phase 2 entitlements: update auth service
 func (f Features) ToProto() *proto.Features {
 	return &proto.Features{
-		// Settings
-		Cloud:           f.Cloud,
-		CustomTheme:     f.CustomTheme,
-		IsStripeManaged: f.IsStripeManaged,
-		IsUsageBased:    f.IsUsageBasedBilling,
-		Questionnaire:   f.Questionnaire,
-		SupportType:     f.SupportType,
-
-		// todo (michellescripts) update this api to use new entitlements; typed as Entitlement
-		AccessList: &proto.AccessListFeature{
-			CreateLimit: f.GetEntitlement(entitlements.AccessLists).Limit,
-		},
-		AccessMonitoring: &proto.AccessMonitoringFeature{
-			Enabled:             f.GetEntitlement(entitlements.AccessMonitoring).Enabled,
-			MaxReportRangeLimit: f.GetEntitlement(entitlements.AccessMonitoring).Limit,
-		},
-		AccessRequests: &proto.AccessRequestsFeature{
-			MonthlyRequestLimit: f.GetEntitlement(entitlements.AccessRequests).Limit,
-		},
-		DeviceTrust: &proto.DeviceTrustFeature{
-			Enabled:           f.GetEntitlement(entitlements.DeviceTrust).Enabled,
-			DevicesUsageLimit: f.GetEntitlement(entitlements.DeviceTrust).Limit,
-		},
-
 		AccessControls:          f.AccessControls,
 		AccessGraph:             f.AccessGraph,
 		AdvancedAccessWorkflows: f.AdvancedAccessWorkflows,
-		App:                     f.GetEntitlement(entitlements.App).Enabled,
 		AutomaticUpgrades:       f.AutomaticUpgrades,
-		DB:                      f.GetEntitlement(entitlements.DB).Enabled,
-		Desktop:                 f.GetEntitlement(entitlements.Desktop).Enabled,
-		ExternalAuditStorage:    f.GetEntitlement(entitlements.ExternalAuditStorage).Enabled,
-		FeatureHiding:           f.GetEntitlement(entitlements.FeatureHiding).Enabled,
-		HSM:                     f.GetEntitlement(entitlements.HSM).Enabled,
-		IdentityGovernance:      f.GetEntitlement(entitlements.Identity).Enabled,
-		JoinActiveSessions:      f.GetEntitlement(entitlements.JoinActiveSessions).Enabled,
-		Kubernetes:              f.GetEntitlement(entitlements.K8s).Enabled,
-		MobileDeviceManagement:  f.GetEntitlement(entitlements.MobileDeviceManagement).Enabled,
-		OIDC:                    f.GetEntitlement(entitlements.OIDC).Enabled,
+		Cloud:                   f.Cloud,
+		CustomTheme:             f.CustomTheme,
+		IsStripeManaged:         f.IsStripeManaged,
+		IsUsageBased:            f.IsUsageBasedBilling,
 		Plugins:                 f.Plugins,
-		Policy:                  &proto.PolicyFeature{Enabled: f.GetEntitlement(entitlements.Policy).Enabled},
 		ProductType:             proto.ProductType(f.ProductType),
+		Questionnaire:           f.Questionnaire,
 		RecoveryCodes:           f.RecoveryCodes,
-		SAML:                    f.GetEntitlement(entitlements.SAML).Enabled,
+		SupportType:             f.SupportType,
+		// Cloud Entitlements
+		// This assignment should be 1:1 with the assignment in e/lib/cloud/feature/feature.go GetCloudFeatures
+		Entitlements: map[string]*proto.EntitlementInfo{
+			string(teleport.AccessLists):            GetAuthProtoEntitlement(f.Entitlements, entitlements.AccessLists),
+			string(teleport.AccessMonitoring):       GetAuthProtoEntitlement(f.Entitlements, entitlements.AccessMonitoring),
+			string(teleport.AccessRequests):         GetAuthProtoEntitlement(f.Entitlements, entitlements.AccessRequests),
+			string(teleport.App):                    GetAuthProtoEntitlement(f.Entitlements, entitlements.App),
+			string(teleport.CloudAuditLogRetention): GetAuthProtoEntitlement(f.Entitlements, entitlements.CloudAuditLogRetention),
+			string(teleport.DB):                     GetAuthProtoEntitlement(f.Entitlements, entitlements.DB),
+			string(teleport.Desktop):                GetAuthProtoEntitlement(f.Entitlements, entitlements.Desktop),
+			string(teleport.DeviceTrust):            GetAuthProtoEntitlement(f.Entitlements, entitlements.DeviceTrust),
+			string(teleport.ExternalAuditStorage):   GetAuthProtoEntitlement(f.Entitlements, entitlements.ExternalAuditStorage),
+			string(teleport.FeatureHiding):          GetAuthProtoEntitlement(f.Entitlements, entitlements.FeatureHiding),
+			string(teleport.HSM):                    GetAuthProtoEntitlement(f.Entitlements, entitlements.HSM),
+			string(teleport.Identity):               GetAuthProtoEntitlement(f.Entitlements, entitlements.Identity),
+			string(teleport.JoinActiveSessions):     GetAuthProtoEntitlement(f.Entitlements, entitlements.JoinActiveSessions),
+			string(teleport.K8s):                    GetAuthProtoEntitlement(f.Entitlements, entitlements.K8s),
+			string(teleport.MobileDeviceManagement): GetAuthProtoEntitlement(f.Entitlements, entitlements.MobileDeviceManagement),
+			string(teleport.OIDC):                   GetAuthProtoEntitlement(f.Entitlements, entitlements.OIDC),
+			string(teleport.OktaSCIM):               GetAuthProtoEntitlement(f.Entitlements, entitlements.OktaSCIM),
+			string(teleport.OktaUserSync):           GetAuthProtoEntitlement(f.Entitlements, entitlements.OktaUserSync),
+			string(teleport.Policy):                 GetAuthProtoEntitlement(f.Entitlements, entitlements.Policy),
+			string(teleport.SAML):                   GetAuthProtoEntitlement(f.Entitlements, entitlements.SAML),
+			string(teleport.SessionLocks):           GetAuthProtoEntitlement(f.Entitlements, entitlements.SessionLocks),
+			string(teleport.UpsellAlert):            GetAuthProtoEntitlement(f.Entitlements, entitlements.UpsellAlert),
+			string(teleport.UsageReporting):         GetAuthProtoEntitlement(f.Entitlements, entitlements.UsageReporting),
+		},
+	}
+}
+
+// GetAuthProtoEntitlement takes a license entitlement set and a feature, and returns an Entitlement for that feature populated with
+// information from the entitlement set
+// OSS version of e/lib/cloud/feature/entitlement.go
+func GetAuthProtoEntitlement(f map[entitlements.EntitlementKind]EntitlementInfo, e entitlements.EntitlementKind) *proto.EntitlementInfo {
+	al, ok := f[e]
+	if !ok {
+		return &proto.EntitlementInfo{}
+	}
+
+	return &proto.EntitlementInfo{
+		Enabled: al.Enabled,
+		Limit:   al.Limit,
 	}
 }
 

@@ -88,7 +88,9 @@ var (
 
 func fakeClusterFeatures() proto.Features {
 	return proto.Features{
-		Kubernetes: true,
+		Entitlements: map[string]*proto.EntitlementInfo{
+			string(teleport.K8s): {Enabled: true},
+		},
 	}
 }
 
@@ -1487,14 +1489,18 @@ func TestKubernetesLicenseEnforcement(t *testing.T) {
 		{
 			name: "kubernetes agent is licensed",
 			features: proto.Features{
-				Kubernetes: true,
+				Entitlements: map[string]*proto.EntitlementInfo{
+					string(teleport.K8s): {Enabled: true},
+				},
 			},
 			assertErrFunc: require.NoError,
 		},
 		{
 			name: "kubernetes isn't licensed",
 			features: proto.Features{
-				Kubernetes: false,
+				Entitlements: map[string]*proto.EntitlementInfo{
+					string(teleport.K8s): {Enabled: false},
+				},
 			},
 			assertErrFunc: func(tt require.TestingT, err error, i ...interface{}) {
 				require.Error(tt, err)

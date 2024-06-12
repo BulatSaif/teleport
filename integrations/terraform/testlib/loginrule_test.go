@@ -23,13 +23,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	loginrulepb "github.com/gravitational/teleport/api/gen/proto/go/teleport/loginrule/v1"
 	"github.com/gravitational/teleport/api/types"
+	"github.com/gravitational/teleport/lib/modules"
 )
 
 func (s *TerraformSuiteEnterprise) TestLoginRule() {
+	oidc := modules.GetProtoEntitlement(s.teleportFeatures, teleport.OIDC)
+	saml := modules.GetProtoEntitlement(s.teleportFeatures, teleport.SAML)
 	require.True(s.T(),
-		s.teleportFeatures.GetOIDC() || s.teleportFeatures.GetSAML(),
+		oidc.Enabled || saml.Enabled,
 		"Test requires enterprise version of teleport",
 	)
 
@@ -108,9 +112,11 @@ func (s *TerraformSuiteEnterprise) TestLoginRule() {
 }
 
 func (s *TerraformSuiteEnterprise) TestImportLoginRule() {
+	oidc := modules.GetProtoEntitlement(s.teleportFeatures, teleport.OIDC)
+	saml := modules.GetProtoEntitlement(s.teleportFeatures, teleport.SAML)
 	require.True(s.T(),
-		s.teleportFeatures.GetOIDC() || s.teleportFeatures.GetSAML(),
-		"Test requires OIDC or SAML",
+		oidc.Enabled || saml.Enabled,
+		"Test requires enterprise version of teleport",
 	)
 
 	ctx := context.Background()

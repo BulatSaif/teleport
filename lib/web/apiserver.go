@@ -1094,14 +1094,7 @@ func (h *Handler) getUserContext(w http.ResponseWriter, r *http.Request, p httpr
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	accessMonitoringEnabled := pingResp.GetServerFeatures().GetAccessMonitoring().GetEnabled()
-
-	// DELETE IN 16.0
-	// If ServerFeatures.AccessMonitoring is nil, then that means the response came from a older auth
-	// where ServerFeatures.AccessMonitoring field does not exist.
-	if pingResp.GetServerFeatures().GetAccessMonitoring() == nil {
-		accessMonitoringEnabled = pingResp.ServerFeatures != nil && pingResp.ServerFeatures.GetIdentityGovernance()
-	}
+	accessMonitoringEnabled := modules.GetProtoEntitlement(pingResp.GetServerFeatures(), teleport.AccessMonitoring).Enabled
 
 	userContext, err := ui.NewUserContext(user, accessChecker.Roles(), *pingResp.ServerFeatures, desktopRecordingEnabled, accessMonitoringEnabled)
 	if err != nil {
@@ -1644,11 +1637,6 @@ func (h *Handler) getWebConfig(w http.ResponseWriter, r *http.Request, p httprou
 		}
 	}
 
-	// TODO(mcbattirola): remove isTeam when it is no longer used
-	isTeam := clusterFeatures.GetProductType() == proto.ProductType_PRODUCT_TYPE_TEAM
-
-	policy := clusterFeatures.GetPolicy()
-
 	// todo (michellescripts) entitlements phase 3: update webCfg
 	webCfg := webclient.WebConfig{
 		Edition:                        modules.GetModules().BuildType(),
@@ -1662,27 +1650,29 @@ func (h *Handler) getWebConfig(w http.ResponseWriter, r *http.Request, p httprou
 		IsUsageBasedBilling:            clusterFeatures.GetIsUsageBased(),
 		AutomaticUpgrades:              automaticUpgradesEnabled,
 		AutomaticUpgradesTargetVersion: automaticUpgradesTargetVersion,
-		HideInaccessibleFeatures:       clusterFeatures.GetFeatureHiding(),
 		CustomTheme:                    clusterFeatures.GetCustomTheme(),
-		IsIGSEnabled:                   clusterFeatures.GetIdentityGovernance(),
-		IsPolicyEnabled:                policy != nil && policy.Enabled,
-		FeatureLimits: webclient.FeatureLimits{
-			AccessListCreateLimit:               int(clusterFeatures.GetAccessList().GetCreateLimit()),
-			AccessMonitoringMaxReportRangeLimit: int(clusterFeatures.GetAccessMonitoring().GetMaxReportRangeLimit()),
-			AccessRequestMonthlyRequestLimit:    int(clusterFeatures.GetAccessRequests().GetMonthlyRequestLimit()),
-		},
-		Questionnaire:          clusterFeatures.GetQuestionnaire(),
-		IsStripeManaged:        clusterFeatures.GetIsStripeManaged(),
-		ExternalAuditStorage:   clusterFeatures.GetExternalAuditStorage(),
-		PremiumSupport:         clusterFeatures.GetSupportType() == proto.SupportType_SUPPORT_TYPE_PREMIUM,
-		AccessRequests:         clusterFeatures.GetAccessRequests().MonthlyRequestLimit > 0,
-		TrustedDevices:         clusterFeatures.GetDeviceTrust().GetEnabled(),
-		OIDC:                   clusterFeatures.GetOIDC(),
-		SAML:                   clusterFeatures.GetSAML(),
-		MobileDeviceManagement: clusterFeatures.GetMobileDeviceManagement(),
-		JoinActiveSessions:     clusterFeatures.GetJoinActiveSessions(),
+		Questionnaire:                  clusterFeatures.GetQuestionnaire(),
+		IsStripeManaged:                clusterFeatures.GetIsStripeManaged(),
+		PremiumSupport:                 clusterFeatures.GetSupportType() == proto.SupportType_SUPPORT_TYPE_PREMIUM,
 		// TODO(mcbattirola): remove isTeam when it is no longer used
-		IsTeam: isTeam,
+		IsTeam: clusterFeatures.GetProductType() == proto.ProductType_PRODUCT_TYPE_TEAM,
+
+		// Cloud Entitlements
+		AccessRequests:           modules.GetProtoEntitlement(&clusterFeatures, teleport.AccessRequests).Enabled,
+		ExternalAuditStorage:     modules.GetProtoEntitlement(&clusterFeatures, teleport.ExternalAuditStorage).Enabled,
+		HideInaccessibleFeatures: modules.GetProtoEntitlement(&clusterFeatures, teleport.FeatureHiding).Enabled,
+		IsIGSEnabled:             modules.GetProtoEntitlement(&clusterFeatures, teleport.Identity).Enabled,
+		IsPolicyEnabled:          modules.GetProtoEntitlement(&clusterFeatures, teleport.Policy).Enabled,
+		JoinActiveSessions:       modules.GetProtoEntitlement(&clusterFeatures, teleport.JoinActiveSessions).Enabled,
+		MobileDeviceManagement:   modules.GetProtoEntitlement(&clusterFeatures, teleport.MobileDeviceManagement).Enabled,
+		OIDC:                     modules.GetProtoEntitlement(&clusterFeatures, teleport.OIDC).Enabled,
+		SAML:                     modules.GetProtoEntitlement(&clusterFeatures, teleport.SAML).Enabled,
+		TrustedDevices:           modules.GetProtoEntitlement(&clusterFeatures, teleport.DeviceTrust).Enabled,
+		FeatureLimits: webclient.FeatureLimits{
+			AccessListCreateLimit:               int(modules.GetProtoEntitlement(&clusterFeatures, teleport.AccessLists).Limit),
+			AccessMonitoringMaxReportRangeLimit: int(modules.GetProtoEntitlement(&clusterFeatures, teleport.AccessMonitoring).Limit),
+			AccessRequestMonthlyRequestLimit:    int(modules.GetProtoEntitlement(&clusterFeatures, teleport.AccessRequests).Limit),
+		},
 	}
 
 	resource, err := h.cfg.ProxyClient.GetClusterName()

@@ -25,6 +25,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/client/proto"
 	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
@@ -91,38 +92,44 @@ func TestValidateSessionRecordingConfigOnCloud(t *testing.T) {
 
 func TestFeatures_ToProto(t *testing.T) {
 	expected := &proto.Features{
-		Assist:                  false,
 		CustomTheme:             "dark",
 		ProductType:             1,
 		SupportType:             1,
 		AccessControls:          true,
 		AccessGraph:             true,
 		AdvancedAccessWorkflows: true,
-		App:                     true,
 		AutomaticUpgrades:       true,
 		Cloud:                   true,
-		DB:                      true,
-		Desktop:                 true,
-		ExternalAuditStorage:    true,
-		FeatureHiding:           true,
-		HSM:                     true,
-		IdentityGovernance:      true,
 		IsStripeManaged:         true,
 		IsUsageBased:            true,
-		JoinActiveSessions:      true,
-		Kubernetes:              true,
-		MobileDeviceManagement:  true,
-		OIDC:                    true,
 		Plugins:                 true,
 		Questionnaire:           true,
 		RecoveryCodes:           true,
-		SAML:                    true,
-
-		AccessList:       &proto.AccessListFeature{CreateLimit: 111},
-		AccessMonitoring: &proto.AccessMonitoringFeature{Enabled: true, MaxReportRangeLimit: 2113},
-		AccessRequests:   &proto.AccessRequestsFeature{MonthlyRequestLimit: 39},
-		DeviceTrust:      &proto.DeviceTrustFeature{Enabled: true, DevicesUsageLimit: 103},
-		Policy:           &proto.PolicyFeature{Enabled: true},
+		Entitlements: map[string]*proto.EntitlementInfo{
+			string(teleport.AccessLists):            {Enabled: true, Limit: 111},
+			string(teleport.AccessMonitoring):       {Enabled: true, Limit: 2113},
+			string(teleport.AccessRequests):         {Enabled: true, Limit: 39},
+			string(teleport.App):                    {Enabled: true, Limit: 3},
+			string(teleport.CloudAuditLogRetention): {Enabled: true, Limit: 3},
+			string(teleport.DB):                     {Enabled: true, Limit: 3},
+			string(teleport.Desktop):                {Enabled: true, Limit: 3},
+			string(teleport.DeviceTrust):            {Enabled: true, Limit: 103},
+			string(teleport.ExternalAuditStorage):   {Enabled: true, Limit: 3},
+			string(teleport.FeatureHiding):          {Enabled: true, Limit: 3},
+			string(teleport.HSM):                    {Enabled: true, Limit: 3},
+			string(teleport.Identity):               {Enabled: true, Limit: 3},
+			string(teleport.JoinActiveSessions):     {Enabled: true, Limit: 3},
+			string(teleport.K8s):                    {Enabled: true, Limit: 3},
+			string(teleport.MobileDeviceManagement): {Enabled: true, Limit: 3},
+			string(teleport.OIDC):                   {Enabled: true, Limit: 3},
+			string(teleport.OktaSCIM):               {Enabled: true, Limit: 3},
+			string(teleport.OktaUserSync):           {Enabled: true, Limit: 3},
+			string(teleport.Policy):                 {Enabled: true, Limit: 3},
+			string(teleport.SAML):                   {Enabled: true, Limit: 3},
+			string(teleport.SessionLocks):           {Enabled: true, Limit: 3},
+			string(teleport.UpsellAlert):            {Enabled: true, Limit: 3},
+			string(teleport.UsageReporting):         {Enabled: true, Limit: 3},
+		},
 	}
 
 	f := modules.Features{
@@ -191,4 +198,43 @@ func TestFeatures_GetEntitlement(t *testing.T) {
 
 	actual = f.GetEntitlement(entitlements.UsageReporting)
 	require.Equal(t, modules.EntitlementInfo{}, actual)
+}
+
+func TestAuthProtoEntitlement(t *testing.T) {
+	f := map[entitlements.EntitlementKind]modules.EntitlementInfo{
+		entitlements.AccessLists:      {Enabled: true},
+		entitlements.AccessMonitoring: {Enabled: true, Limit: 1},
+		entitlements.HSM:              {Enabled: false},
+		entitlements.DeviceTrust:      {Enabled: true, Limit: 3},
+	}
+
+	accessListEntitlement := modules.GetAuthProtoEntitlement(f, entitlements.AccessLists)
+	require.Equal(t, &proto.EntitlementInfo{
+		Enabled: true,
+		Limit:   0,
+	}, accessListEntitlement)
+
+	accessMonitoringEntitlement := modules.GetAuthProtoEntitlement(f, entitlements.AccessMonitoring)
+	require.Equal(t, &proto.EntitlementInfo{
+		Enabled: true,
+		Limit:   1,
+	}, accessMonitoringEntitlement)
+
+	HSMEntitlement := modules.GetAuthProtoEntitlement(f, entitlements.HSM)
+	require.Equal(t, &proto.EntitlementInfo{
+		Enabled: false,
+		Limit:   0,
+	}, HSMEntitlement)
+
+	DeviceTrustEntitlement := modules.GetAuthProtoEntitlement(f, entitlements.DeviceTrust)
+	require.Equal(t, &proto.EntitlementInfo{
+		Enabled: true,
+		Limit:   3,
+	}, DeviceTrustEntitlement)
+
+	unsetEntitlement := modules.GetAuthProtoEntitlement(f, entitlements.MobileDeviceManagement)
+	require.Equal(t, &proto.EntitlementInfo{
+		Enabled: false,
+		Limit:   0,
+	}, unsetEntitlement)
 }
