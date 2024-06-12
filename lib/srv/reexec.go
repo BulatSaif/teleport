@@ -1100,10 +1100,33 @@ func ConfigureCommand(ctx *ServerContext, extraFiles ...*os.File) (*exec.Cmd, er
 			ctx.x11rdyw,
 			ctx.errw,
 		},
+		SysProcAttr: new(syscall.SysProcAttr),
 	}
 	// Add extra files if applicable.
 	if len(extraFiles) > 0 {
 		cmd.ExtraFiles = append(cmd.ExtraFiles, extraFiles...)
+	}
+
+	// For remote port forwarding, the child needs to run as the user to
+	// create listeners with the correct permissions.
+	if subCommand == teleport.RemoteForwardSubCommand {
+		localUser, err := user.Lookup(ctx.Identity.Login)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+		credential, err := getCmdCredential(localUser)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+
+		if os.Getuid() != int(credential.Uid) || os.Getgid() != int(credential.Gid) {
+			cmd.SysProcAttr.Credential = credential
+			log.Debugf("Creating process with UID %v, GID: %v, and Groups: %v.",
+				credential.Uid, credential.Gid, credential.Groups)
+		} else {
+			log.Debugf("Creating process with ambient credentials UID %v, GID: %v, Groups: %v.",
+				credential.Uid, credential.Gid, credential.Groups)
+		}
 	}
 
 	// Perform OS-specific tweaks to the command.

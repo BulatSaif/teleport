@@ -23,8 +23,6 @@ package regular
 import (
 	"net"
 	"os"
-	"os/user"
-	"strconv"
 
 	"github.com/gravitational/trace"
 	"golang.org/x/sys/unix"
@@ -46,18 +44,10 @@ func validateListenerSocket(scx *srv.ServerContext, controlConn *net.UnixConn, l
 	}
 
 	// Check that the user connected to the socket is who we expect.
-	usr, err := user.Lookup(scx.Identity.Login)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	if expectedUid, err := strconv.Atoi(usr.Uid); err != nil {
-		return trace.Wrap(err)
-	} else if int(cred.Uid) != expectedUid {
+	if int(cred.Uid) != os.Getuid() {
 		return trace.AccessDenied("unexpected user UID for the socket: %v", cred.Uid)
 	}
-	if expectedGid, err := strconv.Atoi(usr.Gid); err != nil {
-		return trace.Wrap(err)
-	} else if int(cred.Gid) != expectedGid {
+	if int(cred.Gid) != os.Getgid() {
 		return trace.AccessDenied("unexpected user GID for the socket: %v", cred.Gid)
 	}
 
