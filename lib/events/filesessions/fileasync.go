@@ -417,17 +417,27 @@ func (u *Uploader) startUpload(ctx context.Context, fileName string) error {
 		}
 	}
 
+	start := time.Now()
+	if err := u.takeSemaphore(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+	if time.Since(start) > 500*time.Millisecond {
+		log.Debugf("Semaphore acquired in %v for upload %v.", time.Since(start), fileName)
+	}
+
 	// Apparently, exclusive lock can be obtained only in RDWR mode on NFS
 	sessionFile, err := os.OpenFile(sessionFilePath, os.O_RDWR, 0)
 	if err != nil {
+		_ = u.releaseSemaphore(ctx)
 		return trace.ConvertSystemError(err)
 	}
 	unlock, err := utils.FSTryWriteLock(sessionFilePath)
 	if err != nil {
+		_ = u.releaseSemaphore(ctx)
 		if e := sessionFile.Close(); e != nil {
 			log.WithError(e).Warningf("Failed to close %v.", fileName)
 		}
-		return trace.WrapWithMessage(err, "could not acquire file lock for %q", sessionFilePath)
+		return trace.Wrap(err, "uploader could not acquire file lock for %q", sessionFilePath)
 	}
 
 	upload := &upload{
@@ -438,22 +448,13 @@ func (u *Uploader) startUpload(ctx context.Context, fileName string) error {
 	}
 	upload.checkpointFile, err = os.OpenFile(u.checkpointFilePath(sessionID), os.O_RDWR|os.O_CREATE, 0o600)
 	if err != nil {
+		_ = u.releaseSemaphore(ctx)
 		if err := upload.Close(); err != nil {
 			log.WithError(err).Warningf("Failed to close upload.")
 		}
 		return trace.ConvertSystemError(err)
 	}
 
-	start := time.Now()
-	if err := u.takeSemaphore(ctx); err != nil {
-		if err := upload.Close(); err != nil {
-			log.WithError(err).Warningf("Failed to close upload.")
-		}
-		return trace.Wrap(err)
-	}
-	if time.Since(start) > 500*time.Millisecond {
-		log.Debugf("Semaphore acquired in %v for upload %v.", time.Since(start), fileName)
-	}
 	u.wg.Add(1)
 	go func() {
 		defer u.wg.Done()
