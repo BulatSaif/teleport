@@ -20,7 +20,6 @@ package tbot
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"math"
 	"os"
@@ -172,5 +171,5 @@ func (s *heartbeatService) Run(ctx context.Context) error {
 }
 
 func (s *heartbeatService) String() string {
-	return fmt.Sprintf("heartbeat")
+	return "heartbeat"
 }
