@@ -249,6 +249,8 @@ func (b *Bot) Run(ctx context.Context) (err error) {
 		heartbeatSubmitter: machineidv1pb.NewBotInstanceServiceClient(
 			b.botIdentitySvc.GetClient().GetConnection(),
 		),
+		interval:   time.Minute * 30,
+		retryLimit: 5,
 	})
 	services = append(services, &outputsService{
 		authPingCache:    authPingCache,
