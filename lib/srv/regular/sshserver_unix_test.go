@@ -23,7 +23,6 @@ package regular
 import (
 	"net"
 	"os"
-	"os/user"
 	"syscall"
 	"testing"
 
@@ -63,24 +62,18 @@ func TestValidateListenerSocket(t *testing.T) {
 		return left, listenerFD
 	}
 
-	u, err := user.Current()
-	require.NoError(t, err)
-
 	tests := []struct {
 		name        string
-		user        string
 		mutateFiles func(*testing.T, *uds.Conn, *os.File) (*uds.Conn, *os.File)
 		mutateConn  func(*testing.T, *os.File)
 		assert      require.ErrorAssertionFunc
 	}{
 		{
 			name:   "ok",
-			user:   u.Username,
 			assert: require.NoError,
 		},
 		{
 			name: "socket type not STREAM",
-			user: u.Username,
 			mutateFiles: func(t *testing.T, conn *uds.Conn, file *os.File) (*uds.Conn, *os.File) {
 				left, right, err := uds.NewSocketpair(uds.SocketTypeDatagram)
 				require.NoError(t, err)
@@ -97,7 +90,6 @@ func TestValidateListenerSocket(t *testing.T) {
 		},
 		{
 			name: "SO_REUSEADDR enabled",
-			user: u.Username,
 			mutateConn: func(t *testing.T, file *os.File) {
 				fd := file.Fd()
 				err := unix.SetsockoptInt(int(fd), unix.SOL_SOCKET, unix.SO_REUSEADDR, 1)
@@ -107,7 +99,6 @@ func TestValidateListenerSocket(t *testing.T) {
 		},
 		{
 			name: "listener socket is not listening",
-			user: u.Username,
 			mutateFiles: func(t *testing.T, conn *uds.Conn, file *os.File) (*uds.Conn, *os.File) {
 				left, right, err := uds.NewSocketpair(uds.SocketTypeStream)
 				require.NoError(t, err)
