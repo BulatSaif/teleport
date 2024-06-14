@@ -1,5 +1,5 @@
-//go:build linux
-// +build linux
+//go:build unix
+// +build unix
 
 /*
  * Teleport
@@ -79,11 +79,6 @@ func TestValidateListenerSocket(t *testing.T) {
 			assert: require.NoError,
 		},
 		{
-			name:   "wrong user",
-			user:   "fake-user",
-			assert: require.Error,
-		},
-		{
 			name: "socket type not STREAM",
 			user: u.Username,
 			mutateFiles: func(t *testing.T, conn *uds.Conn, file *os.File) (*uds.Conn, *os.File) {
@@ -130,11 +125,6 @@ func TestValidateListenerSocket(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			scx := &srv.ServerContext{
-				Identity: srv.IdentityContext{
-					Login: tc.user,
-				},
-			}
 			conn, listenerFD := newSocketFiles(t)
 			if tc.mutateFiles != nil {
 				conn, listenerFD = tc.mutateFiles(t, conn, listenerFD)
@@ -142,7 +132,7 @@ func TestValidateListenerSocket(t *testing.T) {
 			if tc.mutateConn != nil {
 				tc.mutateConn(t, listenerFD)
 			}
-			err := validateListenerSocket(scx, conn.UnixConn, listenerFD)
+			err := validateListenerSocket(&srv.ServerContext{}, conn.UnixConn, listenerFD)
 			tc.assert(t, err)
 		})
 	}
