@@ -159,6 +159,17 @@ export function UserMenuNav({ username, iconSize }: UserMenuNavProps) {
     transitionDelay += INCREMENT_TRANSITION_DELAY;
   }
 
+  function logout() {
+    if (ctx.storeUser.getIsSamlSloEnabled()) {
+      const sloUrl = ctx.storeUser.getSamlSloUrl();
+
+      session.logoutWithoutRedirect();
+      window.open(sloUrl);
+    } else {
+      session.logout();
+    }
+  }
+
   return (
     <Container ref={ref}>
       <UserInfo onClick={() => setOpen(!open)} open={open}>
@@ -191,7 +202,7 @@ export function UserMenuNav({ username, iconSize }: UserMenuNavProps) {
         )}
 
         <DropdownItem open={open} $transitionDelay={transitionDelay}>
-          <DropdownItemButton onClick={() => session.logout()}>
+          <DropdownItemButton onClick={() => logout()}>
             <DropdownItemIcon>
               <LogoutIcon />
             </DropdownItemIcon>

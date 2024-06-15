@@ -43,6 +43,12 @@ const session = {
     this.clear();
   },
 
+  logoutWithoutRedirect() {
+    api.delete(cfg.api.webSessionPath);
+
+    this.clear();
+  },
+
   clear() {
     this._stopTokenChecker();
     storageService.unsubscribe(receiveMessage);

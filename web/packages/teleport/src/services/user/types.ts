@@ -45,6 +45,7 @@ export interface UserContext {
   allowedSearchAsRoles: string[];
   /** Indicates whether the user has a password set. */
   passwordState: PasswordState;
+  ssoContext?: SSOContext;
 }
 
 /**
@@ -175,4 +176,12 @@ export type OnboardDiscover = {
   // hasVisited is a flag to indicate if user has visited the
   // discover page.
   hasVisited?: boolean;
+};
+
+/** SSOContext contains information regarding the SSO session, if this the user logged in via an auth connector. */
+export type SSOContext = {
+  /** connectorType is the type of the SSO connector, either "saml", "oidc", or "github". */
+  connectorType: string;
+  /** samlSingleLogoutUrl is the SAML Single log-out URL to initiate SAML SLO, if configured. */
+  samlSingleLogoutUrl?: string;
 };

@@ -239,4 +239,12 @@ export default class StoreUserContext extends Store<UserContext> {
   getBotsAccess() {
     return this.state.acl.bots;
   }
+
+  getIsSamlSloEnabled() {
+    return !!this.state?.ssoContext?.samlSingleLogoutUrl;
+  }
+
+  getSamlSloUrl() {
+    return this.state.ssoContext.samlSingleLogoutUrl;
+  }
 }

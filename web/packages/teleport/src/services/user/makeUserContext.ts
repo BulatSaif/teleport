@@ -45,6 +45,7 @@ export default function makeUserContext(json: any): UserContext {
     accessRequestId,
     allowedSearchAsRoles,
     passwordState,
+    ssoContext: json.ssoContext,
   };
 }
 

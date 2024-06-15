@@ -20,6 +20,7 @@ package ui
 
 import (
 	"github.com/gravitational/teleport/api/client/proto"
+	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/lib/services"
 )
@@ -69,6 +70,16 @@ type UserContext struct {
 	AllowedSearchAsRoles []string `json:"allowedSearchAsRoles"`
 	// PasswordState specifies whether the user has a password set or not.
 	PasswordSate types.PasswordState `json:"passwordState"`
+	// SSOContext contains information regarding the SSO session, if this the user logged in via an auth connector.
+	SSOContext SSOContext `json:"ssoContext,omitempty"`
+}
+
+// SSOContext contains information regarding the SSO session, if this the user logged in via an auth connector.
+type SSOContext struct {
+	// ConnectorType is the type of the SSO connector, either "saml", "oidc", or "github".
+	ConnectorType string `json:"connectorType,omitempty"`
+	// SAMLSingleLogoutURL is the SAML Single log-out URL to initiate SAML SLO, if configured.
+	SAMLSingleLogoutURL string `json:"samlSingleLogoutUrl,omitempty"`
 }
 
 func getAccessStrategy(roleset services.RoleSet) accessStrategy {
@@ -100,24 +111,36 @@ func NewUserContext(user types.User, userRoles services.RoleSet, features proto.
 	acl := services.NewUserACL(user, userRoles, features, desktopRecordingEnabled, accessMonitoringEnabled)
 	accessStrategy := getAccessStrategy(userRoles)
 
-	// local user
-	authType := authLocal
-
-	// check for any SSO identities
-	isSSO := len(user.GetOIDCIdentities()) > 0 ||
-		len(user.GetGithubIdentities()) > 0 ||
-		len(user.GetSAMLIdentities()) > 0
-
-	if isSSO {
-		// SSO user
-		authType = authSSO
-	}
-
-	return &UserContext{
+	// Default user context.
+	userContext := &UserContext{
 		Name:           user.GetName(),
 		ACL:            acl,
-		AuthType:       authType,
+		AuthType:       authLocal,
 		AccessStrategy: accessStrategy,
 		PasswordSate:   user.GetPasswordState(),
-	}, nil
+	}
+
+	if len(user.GetOIDCIdentities()) > 0 {
+		userContext.AuthType = authSSO
+		userContext.SSOContext = SSOContext{
+			ConnectorType: constants.OIDC,
+		}
+	}
+
+	if len(user.GetGithubIdentities()) > 0 {
+		userContext.AuthType = authSSO
+		userContext.SSOContext = SSOContext{
+			ConnectorType: constants.Github,
+		}
+	}
+
+	if len(user.GetSAMLIdentities()) > 0 {
+		userContext.AuthType = authSSO
+		userContext.SSOContext = SSOContext{
+			ConnectorType:       constants.SAML,
+			SAMLSingleLogoutURL: user.GetSAMLIdentities()[0].SAMLSingleLogoutURL,
+		}
+	}
+
+	return userContext, nil
 }
