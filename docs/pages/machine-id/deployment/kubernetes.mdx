@@ -318,6 +318,9 @@ In order to adjust the access guides to work well with Kubernetes, use the
 Kubernetes Secret destination type. This will write the generated artifacts
 to a specified Kubernetes Secret, for example:
 
+<Tabs>
+<TabItem name="Outputting SSH, Application or Database Credentials">
+
 ```yaml
 outputs:
   - type: identity
@@ -325,6 +328,27 @@ outputs:
       type: kubernetes_secret
       name: identity-output
 ```
+
+</TabItem>
+<TabItem name="Outputting Kubernetes credentials">
+
+By default, when outputting Kubernetes credentials, `tbot` outputs make use of a Kubernetes exec
+plugin to always provide the "latest" version of the credentials. When outputting Kubernetes credentials
+to a Kubernetes secret, however, it is important to disable the use of the `exec` plugin so that a
+static `kubeconfig` file is written instead:
+
+```yaml
+outputs:
+  - type: kubernetes
+    kubernetes_cluster: target-kube-cluster-name
+    disable_exec_plugin: true
+    destination:
+      type: kubernetes_secret
+      name: identity-output
+```
+
+</TabItem>
+</Tabs>
 
 The output can then be consumed by mounting this secret within another pod:
 
