@@ -22,20 +22,20 @@ resource "teleport_github_connector" "github" {
   ]
 
   metadata = {
-     name = "example"
-     labels = {
-       example = "yes"
-     }
+    name = "example"
+    labels = {
+      example = "yes"
+    }
   }
-  
+
   spec = {
-    client_id = "client"
+    client_id     = "client"
     client_secret = var.github_secret
 
     teams_to_roles = [{
-       organization = "gravitational"
-       team = "devs"
-       roles = ["example"]
+      organization = "gravitational"
+      team         = "devs"
+      roles        = ["example"]
     }]
   }
 }
