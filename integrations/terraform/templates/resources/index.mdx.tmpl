@@ -1,0 +1,9 @@
+---
+title: "Terraform resources index"
+description: "Index of all the datasources supported by the Teleport Terraform Provider"
+---
+
+The Teleport Terraform provider supports the following resources:
+{{ range $key, $value := .ResourceFiles }}
+  - [`{{$key}}`](./{{$value}}.mdx)
+{{- end }}
