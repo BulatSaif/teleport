@@ -4,7 +4,7 @@ resource "teleport_session_recording_config" "example" {
   metadata = {
     description = "Session recording config"
     labels = {
-      "example" = "yes"
+      "example"             = "yes"
       "teleport.dev/origin" = "dynamic" // This label is added on Teleport side by default
     }
   }

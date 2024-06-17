@@ -14,7 +14,7 @@ resource "teleport_oidc_connector" "example" {
   }
 
   spec = {
-    client_id = "client"
+    client_id     = "client"
     client_secret = var.oidc_secret
 
     claims_to_roles = [{

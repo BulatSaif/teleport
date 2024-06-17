@@ -8,14 +8,14 @@ resource "teleport_okta_import_rule" "example" {
     }
   }
 
-  version  = "v1"
+  version = "v1"
 
   spec = {
     priority = 100
     mappings = [
       {
         add_labels = {
-          "label1": "value1"
+          "label1" : "value1"
         }
         match = [
           {
@@ -25,7 +25,7 @@ resource "teleport_okta_import_rule" "example" {
       },
       {
         add_labels = {
-          "label2": "value2"
+          "label2" : "value2"
         }
         match = [
           {

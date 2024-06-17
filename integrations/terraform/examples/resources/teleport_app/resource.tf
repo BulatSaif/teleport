@@ -2,10 +2,10 @@
 
 resource "teleport_app" "example" {
   metadata = {
-    name = "example"
+    name        = "example"
     description = "Test app"
     labels = {
-        "teleport.dev/origin" = "dynamic" // This label is added on Teleport side by default
+      "teleport.dev/origin" = "dynamic" // This label is added on Teleport side by default
     }
   }
 

@@ -30,11 +30,11 @@ resource "teleport_saml_connector" "example" {
       name  = "groups"
       roles = ["example"]
       value = "okta-admin"
-    },
-    {
-      name  = "groups"
-      roles = ["example"]
-      value = "okta-dev"
+      },
+      {
+        name  = "groups"
+        roles = ["example"]
+        value = "okta-dev"
     }]
 
     acs               = "https://localhost:3025/v1/webapi/saml/acs"
