@@ -154,3 +154,6 @@ destroy:
 .PHONY: lint
 lint:
 	golangci-lint run -c ../../.golangci.yml
+
+docs: gen-tfschema install
+	./gen/docs.sh $(VERSION)
