@@ -23,12 +23,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gravitational/teleport/api/client/proto"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gravitational/teleport"
+	"github.com/gravitational/teleport/api/client/proto"
 	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/auth"
 	"github.com/gravitational/teleport/lib/modules"
 )
@@ -140,30 +140,30 @@ func TestFeatures_ToProto(t *testing.T) {
 		Plugins:                 true,
 		Questionnaire:           true,
 		RecoveryCodes:           true,
-		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-			teleport.AccessLists:            {Enabled: true, Limit: 111},
-			teleport.AccessMonitoring:       {Enabled: true, Limit: 2113},
-			teleport.AccessRequests:         {Enabled: true, Limit: 39},
-			teleport.App:                    {Enabled: true, Limit: 3},
-			teleport.CloudAuditLogRetention: {Enabled: true, Limit: 3},
-			teleport.DB:                     {Enabled: true, Limit: 3},
-			teleport.Desktop:                {Enabled: true, Limit: 3},
-			teleport.DeviceTrust:            {Enabled: true, Limit: 103},
-			teleport.ExternalAuditStorage:   {Enabled: true, Limit: 3},
-			teleport.FeatureHiding:          {Enabled: true, Limit: 3},
-			teleport.HSM:                    {Enabled: true, Limit: 3},
-			teleport.Identity:               {Enabled: true, Limit: 3},
-			teleport.JoinActiveSessions:     {Enabled: true, Limit: 3},
-			teleport.K8s:                    {Enabled: true, Limit: 3},
-			teleport.MobileDeviceManagement: {Enabled: true, Limit: 3},
-			teleport.OIDC:                   {Enabled: true, Limit: 3},
-			teleport.OktaSCIM:               {Enabled: true, Limit: 3},
-			teleport.OktaUserSync:           {Enabled: true, Limit: 3},
-			teleport.Policy:                 {Enabled: true, Limit: 3},
-			teleport.SAML:                   {Enabled: true, Limit: 3},
-			teleport.SessionLocks:           {Enabled: true, Limit: 3},
-			teleport.UpsellAlert:            {Enabled: true, Limit: 3},
-			teleport.UsageReporting:         {Enabled: true, Limit: 3},
+		Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+			entitlements.AccessLists:            {Enabled: true, Limit: 111},
+			entitlements.AccessMonitoring:       {Enabled: true, Limit: 2113},
+			entitlements.AccessRequests:         {Enabled: true, Limit: 39},
+			entitlements.App:                    {Enabled: true, Limit: 3},
+			entitlements.CloudAuditLogRetention: {Enabled: true, Limit: 3},
+			entitlements.DB:                     {Enabled: true, Limit: 3},
+			entitlements.Desktop:                {Enabled: true, Limit: 3},
+			entitlements.DeviceTrust:            {Enabled: true, Limit: 103},
+			entitlements.ExternalAuditStorage:   {Enabled: true, Limit: 3},
+			entitlements.FeatureHiding:          {Enabled: true, Limit: 3},
+			entitlements.HSM:                    {Enabled: true, Limit: 3},
+			entitlements.Identity:               {Enabled: true, Limit: 3},
+			entitlements.JoinActiveSessions:     {Enabled: true, Limit: 3},
+			entitlements.K8s:                    {Enabled: true, Limit: 3},
+			entitlements.MobileDeviceManagement: {Enabled: true, Limit: 3},
+			entitlements.OIDC:                   {Enabled: true, Limit: 3},
+			entitlements.OktaSCIM:               {Enabled: true, Limit: 3},
+			entitlements.OktaUserSync:           {Enabled: true, Limit: 3},
+			entitlements.Policy:                 {Enabled: true, Limit: 3},
+			entitlements.SAML:                   {Enabled: true, Limit: 3},
+			entitlements.SessionLocks:           {Enabled: true, Limit: 3},
+			entitlements.UpsellAlert:            {Enabled: true, Limit: 3},
+			entitlements.UsageReporting:         {Enabled: true, Limit: 3},
 		},
 	}
 
@@ -173,22 +173,22 @@ func TestFeatures_ToProto(t *testing.T) {
 
 func TestFeatures_GetEntitlement(t *testing.T) {
 	f := modules.Features{
-		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-			teleport.AccessLists: {Enabled: true, Limit: 111},
-			teleport.K8s:         {Enabled: false},
-			teleport.SAML:        {},
+		Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+			entitlements.AccessLists: {Enabled: true, Limit: 111},
+			entitlements.K8s:         {Enabled: false},
+			entitlements.SAML:        {},
 		},
 	}
 
-	actual := f.GetEntitlement(teleport.AccessLists)
+	actual := f.GetEntitlement(entitlements.AccessLists)
 	require.Equal(t, modules.EntitlementInfo{Enabled: true, Limit: 111}, actual)
 
-	actual = f.GetEntitlement(teleport.K8s)
+	actual = f.GetEntitlement(entitlements.K8s)
 	require.Equal(t, modules.EntitlementInfo{Enabled: false}, actual)
 
-	actual = f.GetEntitlement(teleport.SAML)
+	actual = f.GetEntitlement(entitlements.SAML)
 	require.Equal(t, modules.EntitlementInfo{}, actual)
 
-	actual = f.GetEntitlement(teleport.UsageReporting)
+	actual = f.GetEntitlement(entitlements.UsageReporting)
 	require.Equal(t, modules.EntitlementInfo{}, actual)
 }

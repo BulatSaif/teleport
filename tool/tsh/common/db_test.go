@@ -40,6 +40,7 @@ import (
 	apidefaults "github.com/gravitational/teleport/api/defaults"
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/api/utils/keys"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/client"
 	"github.com/gravitational/teleport/lib/defaults"
 	"github.com/gravitational/teleport/lib/fixtures"
@@ -76,8 +77,8 @@ func TestTshDB(t *testing.T) {
 		&modules.TestModules{
 			TestBuildType: modules.BuildEnterprise,
 			TestFeatures: modules.Features{
-				Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-					teleport.DB: {Enabled: true},
+				Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+					entitlements.DB: {Enabled: true},
 				},
 			},
 		},

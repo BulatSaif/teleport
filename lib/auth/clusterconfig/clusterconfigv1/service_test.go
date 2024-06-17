@@ -29,11 +29,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/testing/protocmp"
 
-	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/constants"
 	clusterconfigpb "github.com/gravitational/teleport/api/gen/proto/go/teleport/clusterconfig/v1"
 	"github.com/gravitational/teleport/api/types"
 	apievents "github.com/gravitational/teleport/api/types/events"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/auth/clusterconfig/clusterconfigv1"
 	"github.com/gravitational/teleport/lib/authz"
 	"github.com/gravitational/teleport/lib/backend/memory"
@@ -1799,8 +1799,8 @@ func TestGetAccessGraphConfig(t *testing.T) {
 			testSetup: func(t *testing.T) {
 				m := modules.TestModules{
 					TestFeatures: modules.Features{
-						Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-							teleport.Policy: {Enabled: true},
+						Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+							entitlements.Policy: {Enabled: true},
 						},
 					},
 				}
@@ -1823,8 +1823,8 @@ func TestGetAccessGraphConfig(t *testing.T) {
 			testSetup: func(t *testing.T) {
 				m := modules.TestModules{
 					TestFeatures: modules.Features{
-						Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-							teleport.Policy: {Enabled: true},
+						Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+							entitlements.Policy: {Enabled: true},
 						},
 					},
 				}

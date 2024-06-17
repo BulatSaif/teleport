@@ -39,10 +39,10 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
-	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/constants"
 	"github.com/gravitational/teleport/api/types"
 	apievents "github.com/gravitational/teleport/api/types/events"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/events"
 	testingkubemock "github.com/gravitational/teleport/lib/kube/proxy/testing/kube_server"
 	"github.com/gravitational/teleport/lib/modules"
@@ -51,8 +51,8 @@ import (
 func TestModeratedSessions(t *testing.T) {
 	// enable enterprise features to have access to ModeratedSessions.
 	modules.SetTestModules(t, &modules.TestModules{TestBuildType: modules.BuildEnterprise, TestFeatures: modules.Features{
-		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-			teleport.K8s: {Enabled: true},
+		Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+			entitlements.K8s: {Enabled: true},
 		},
 	}})
 	const (
@@ -502,8 +502,8 @@ func validateSessionTracker(testCtx *TestContext, sessionID string, reason strin
 func TestInteractiveSessionsNoAuth(t *testing.T) {
 	// enable enterprise features to have access to ModeratedSessions.
 	modules.SetTestModules(t, &modules.TestModules{TestBuildType: modules.BuildEnterprise, TestFeatures: modules.Features{
-		Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-			teleport.K8s: {Enabled: true},
+		Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+			entitlements.K8s: {Enabled: true},
 		},
 	}})
 	const (

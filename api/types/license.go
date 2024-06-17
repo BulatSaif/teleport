@@ -156,12 +156,12 @@ type License interface {
 
 	// GetSupportsPolicy returns Teleport Policy support flag.
 	GetSupportsPolicy() Bool
-	//SetSupportsPolicy sets Teleport Policy support flag.
+	// SetSupportsPolicy sets Teleport Policy support flag.
 	SetSupportsPolicy(Bool)
 
 	// GetEntitlements returns the Entitlements object
 	GetEntitlements() map[string]EntitlementInfo
-	//SetEntitlements sets the Entitlements object
+	// SetEntitlements sets the Entitlements object
 	SetEntitlements(map[string]EntitlementInfo)
 }
 

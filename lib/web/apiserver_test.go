@@ -94,6 +94,7 @@ import (
 	apiutils "github.com/gravitational/teleport/api/utils"
 	"github.com/gravitational/teleport/api/utils/grpc/interceptors"
 	"github.com/gravitational/teleport/api/utils/keys"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib"
 	"github.com/gravitational/teleport/lib/agentless"
 	"github.com/gravitational/teleport/lib/auth"
@@ -4412,8 +4413,8 @@ func TestClusterAppsGet(t *testing.T) {
 func TestApplicationAccessDisabled(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.App: {Enabled: false},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.App: {Enabled: false},
 			},
 		},
 	})
@@ -4669,10 +4670,10 @@ func TestGetWebConfig_IGSFeatureLimits(t *testing.T) {
 			IsUsageBasedBilling: true,
 			IsStripeManaged:     true,
 			Questionnaire:       true,
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.Identity:         {Enabled: true},
-				teleport.AccessLists:      {Enabled: true, Limit: 5},
-				teleport.AccessMonitoring: {Enabled: true, Limit: 10},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.Identity:         {Enabled: true},
+				entitlements.AccessLists:      {Enabled: true, Limit: 5},
+				entitlements.AccessMonitoring: {Enabled: true, Limit: 10},
 			},
 		},
 	})

@@ -1,9 +1,10 @@
-package teleport
+package entitlements
 
-// EntitlementKind should be 1:1 with the Features & FeatureStrings in salescenter/product/product.go
-// Custom Theme is dropped; if a string value is set on the parent struct we honor that as the theme
 type EntitlementKind string
 
+// The EntitlementKind list should be 1:1 with the Features & FeatureStrings in salescenter/product/product.go,
+// except CustomTheme which is dropped. CustomTheme entitlement only toggles the ability to "set" a theme;
+// the value of that theme, if set, is stored and accessed outside of entitlements.
 const (
 	AccessLists            EntitlementKind = "AccessLists"
 	AccessMonitoring       EntitlementKind = "AccessMonitoring"

@@ -38,6 +38,7 @@ import (
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/api/types/accesslist"
 	"github.com/gravitational/teleport/api/utils/keys"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/auth/native"
 	"github.com/gravitational/teleport/lib/automaticupgrades"
 	"github.com/gravitational/teleport/lib/tlsca"
@@ -59,18 +60,7 @@ type Features struct {
 	// SupportType indicates the type of customer's support
 	SupportType proto.SupportType
 	// Entitlements reflect Cloud Entitlements including access and limits
-	Entitlements map[teleport.EntitlementKind]EntitlementInfo
-
-	// --------------- Deprecated Fields
-	// AccessControls enables FIPS access controls
-	// Deprecated
-	AccessControls bool
-	// Assist enables Assistant feature
-	// Deprecated
-	Assist bool
-	// ProductType describes the product being used.
-	// Deprecated
-	ProductType ProductType
+	Entitlements map[entitlements.EntitlementKind]EntitlementInfo
 
 	// todo (michellescripts) have the following fields evaluated for deprecation, consolidation, or fetch from Cloud
 	// AdvancedAccessWorkflows is currently set to the value of the Cloud Access Requests entitlement
@@ -87,30 +77,24 @@ type Features struct {
 	// *Access* to the feature is gated on the `Policy` flag.
 	// TODO(justinas): remove this field once "TAG enabled" status is moved to a resource in the backend.
 	AccessGraph bool
+	// --------------- Deprecated Fields
+	// AccessControls enables FIPS access controls
+	// Deprecated
+	AccessControls bool
+	// Assist enables Assistant feature
+	// Deprecated
+	Assist bool
+	// ProductType describes the product being used.
+	// Deprecated
+	ProductType ProductType
 }
 
+// EntitlementInfo is the state and limits of a particular entitlement
 type EntitlementInfo struct {
 	// Enabled indicates the feature is 'on' if true; feature is disabled if false
 	Enabled bool
 	// Limit indicates the allotted amount of use when limited; if 0 use is unlimited
 	Limit int32
-}
-
-// DeviceTrustFeature holds the Device Trust feature general and usage-based
-// settings.
-// Limits have no affect if [Feature.Identity] is enabled.
-type DeviceTrustFeature struct {
-	// Currently this flag is to gate actions from OSS clusters.
-	//
-	// Determining support for device trust is currently determined by:
-	//   1) Enterprise + [Features.Identity] == true, new flag
-	//   introduced with Enterprise Usage Based (EUB) product.
-	//   2) Enterprise + [Features.IsUsageBasedBilling] == false, legacy support
-	//   where before EUB, it was unlimited.
-	Enabled bool
-	// DevicesUsageLimit is the usage-based limit for the number of
-	// registered/enrolled devices, at the implementation's discretion.
-	DevicesUsageLimit int
 }
 
 // ToProto converts Features into proto.Features
@@ -127,44 +111,44 @@ func (f Features) ToProto() *proto.Features {
 
 		// todo (michellescripts) update this api to use new entitlements; typed as Entitlement
 		AccessList: &proto.AccessListFeature{
-			CreateLimit: f.GetEntitlement(teleport.AccessLists).Limit,
+			CreateLimit: f.GetEntitlement(entitlements.AccessLists).Limit,
 		},
 		AccessMonitoring: &proto.AccessMonitoringFeature{
-			Enabled:             f.GetEntitlement(teleport.AccessMonitoring).Enabled,
-			MaxReportRangeLimit: f.GetEntitlement(teleport.AccessMonitoring).Limit,
+			Enabled:             f.GetEntitlement(entitlements.AccessMonitoring).Enabled,
+			MaxReportRangeLimit: f.GetEntitlement(entitlements.AccessMonitoring).Limit,
 		},
 		AccessRequests: &proto.AccessRequestsFeature{
-			MonthlyRequestLimit: f.GetEntitlement(teleport.AccessRequests).Limit,
+			MonthlyRequestLimit: f.GetEntitlement(entitlements.AccessRequests).Limit,
 		},
 		DeviceTrust: &proto.DeviceTrustFeature{
-			Enabled:           f.GetEntitlement(teleport.DeviceTrust).Enabled,
-			DevicesUsageLimit: f.GetEntitlement(teleport.DeviceTrust).Limit,
+			Enabled:           f.GetEntitlement(entitlements.DeviceTrust).Enabled,
+			DevicesUsageLimit: f.GetEntitlement(entitlements.DeviceTrust).Limit,
 		},
 
 		AccessControls:          f.AccessControls,
 		AccessGraph:             f.AccessGraph,
 		AdvancedAccessWorkflows: f.AdvancedAccessWorkflows,
-		App:                     f.GetEntitlement(teleport.App).Enabled,
+		App:                     f.GetEntitlement(entitlements.App).Enabled,
 		AutomaticUpgrades:       f.AutomaticUpgrades,
-		DB:                      f.GetEntitlement(teleport.DB).Enabled,
-		Desktop:                 f.GetEntitlement(teleport.Desktop).Enabled,
-		ExternalAuditStorage:    f.GetEntitlement(teleport.ExternalAuditStorage).Enabled,
-		FeatureHiding:           f.GetEntitlement(teleport.FeatureHiding).Enabled,
-		HSM:                     f.GetEntitlement(teleport.HSM).Enabled,
-		IdentityGovernance:      f.GetEntitlement(teleport.Identity).Enabled,
-		JoinActiveSessions:      f.GetEntitlement(teleport.JoinActiveSessions).Enabled,
-		Kubernetes:              f.GetEntitlement(teleport.K8s).Enabled,
-		MobileDeviceManagement:  f.GetEntitlement(teleport.MobileDeviceManagement).Enabled,
-		OIDC:                    f.GetEntitlement(teleport.OIDC).Enabled,
+		DB:                      f.GetEntitlement(entitlements.DB).Enabled,
+		Desktop:                 f.GetEntitlement(entitlements.Desktop).Enabled,
+		ExternalAuditStorage:    f.GetEntitlement(entitlements.ExternalAuditStorage).Enabled,
+		FeatureHiding:           f.GetEntitlement(entitlements.FeatureHiding).Enabled,
+		HSM:                     f.GetEntitlement(entitlements.HSM).Enabled,
+		IdentityGovernance:      f.GetEntitlement(entitlements.Identity).Enabled,
+		JoinActiveSessions:      f.GetEntitlement(entitlements.JoinActiveSessions).Enabled,
+		Kubernetes:              f.GetEntitlement(entitlements.K8s).Enabled,
+		MobileDeviceManagement:  f.GetEntitlement(entitlements.MobileDeviceManagement).Enabled,
+		OIDC:                    f.GetEntitlement(entitlements.OIDC).Enabled,
 		Plugins:                 f.Plugins,
-		Policy:                  &proto.PolicyFeature{Enabled: f.GetEntitlement(teleport.Policy).Enabled},
+		Policy:                  &proto.PolicyFeature{Enabled: f.GetEntitlement(entitlements.Policy).Enabled},
 		ProductType:             proto.ProductType(f.ProductType),
 		RecoveryCodes:           f.RecoveryCodes,
-		SAML:                    f.GetEntitlement(teleport.SAML).Enabled,
+		SAML:                    f.GetEntitlement(entitlements.SAML).Enabled,
 	}
 }
 
-func (f Features) GetEntitlement(e teleport.EntitlementKind) EntitlementInfo {
+func (f Features) GetEntitlement(e entitlements.EntitlementKind) EntitlementInfo {
 	al, ok := f.Entitlements[e]
 	if !ok {
 		return EntitlementInfo{}
@@ -348,12 +332,12 @@ func (p *defaultModules) Features() Features {
 	return Features{
 		AutomaticUpgrades: p.automaticUpgrades,
 		SupportType:       proto.SupportType_SUPPORT_TYPE_FREE,
-		Entitlements: map[teleport.EntitlementKind]EntitlementInfo{
-			teleport.App:                {Enabled: true, Limit: 0},
-			teleport.DB:                 {Enabled: true, Limit: 0},
-			teleport.Desktop:            {Enabled: true, Limit: 0},
-			teleport.JoinActiveSessions: {Enabled: true, Limit: 0},
-			teleport.K8s:                {Enabled: true, Limit: 0},
+		Entitlements: map[entitlements.EntitlementKind]EntitlementInfo{
+			entitlements.App:                {Enabled: true, Limit: 0},
+			entitlements.DB:                 {Enabled: true, Limit: 0},
+			entitlements.Desktop:            {Enabled: true, Limit: 0},
+			entitlements.JoinActiveSessions: {Enabled: true, Limit: 0},
+			entitlements.K8s:                {Enabled: true, Limit: 0},
 		},
 	}
 }

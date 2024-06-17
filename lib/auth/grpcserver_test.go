@@ -64,6 +64,7 @@ import (
 	"github.com/gravitational/teleport/api/utils"
 	"github.com/gravitational/teleport/api/utils/keys"
 	"github.com/gravitational/teleport/api/utils/sshutils"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/auth/authclient"
 	"github.com/gravitational/teleport/lib/auth/mocku2f"
 	"github.com/gravitational/teleport/lib/auth/testauthority"
@@ -855,8 +856,8 @@ func TestGenerateUserCerts_deviceAuthz(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestBuildType: modules.BuildEnterprise, // required for Device Trust.
 		TestFeatures: modules.Features{
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.App: {Enabled: true},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.App: {Enabled: true},
 			},
 		},
 	})
@@ -4190,8 +4191,8 @@ func TestExport(t *testing.T) {
 func TestSAMLValidation(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.SAML: {Enabled: true},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.SAML: {Enabled: true},
 			},
 		},
 	})
@@ -4465,8 +4466,8 @@ func TestUpsertApplicationServerOrigin(t *testing.T) {
 func TestGetAccessGraphConfig(t *testing.T) {
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.Policy: {Enabled: true},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.Policy: {Enabled: true},
 			},
 		},
 	})

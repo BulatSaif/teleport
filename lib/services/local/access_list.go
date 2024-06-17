@@ -34,6 +34,7 @@ import (
 	"github.com/gravitational/teleport/api/types"
 	"github.com/gravitational/teleport/api/types/accesslist"
 	"github.com/gravitational/teleport/api/types/header"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/modules"
 	"github.com/gravitational/teleport/lib/services"
@@ -195,7 +196,7 @@ func (a *AccessListService) runOpWithLock(ctx context.Context, accessList *acces
 	// the AccessList feature
 
 	action := updateAccessList
-	if !modules.GetModules().Features().GetEntitlement(teleport.Identity).Enabled {
+	if !modules.GetModules().Features().GetEntitlement(entitlements.Identity).Enabled {
 		action = func() error {
 			err := a.service.RunWhileLocked(ctx, createAccessListLimitLockName, accessListLockTTL,
 				func(ctx context.Context, _ backend.Backend) error {
@@ -463,7 +464,7 @@ func (a *AccessListService) UpsertAccessListWithMembers(ctx context.Context, acc
 	// AccessList feature
 
 	action := reconcileMembers
-	if !modules.GetModules().Features().GetEntitlement(teleport.Identity).Enabled {
+	if !modules.GetModules().Features().GetEntitlement(entitlements.Identity).Enabled {
 		action = func() error {
 			return a.service.RunWhileLocked(ctx, createAccessListLimitLockName, 2*accessListLockTTL,
 				func(ctx context.Context, _ backend.Backend) error {
@@ -660,7 +661,7 @@ func lockName(accessListName string) string {
 // Returns error if limit has been reached.
 func (a *AccessListService) VerifyAccessListCreateLimit(ctx context.Context, targetAccessListName string) error {
 	f := modules.GetModules().Features()
-	if f.GetEntitlement(teleport.Identity).Enabled {
+	if f.GetEntitlement(entitlements.Identity).Enabled {
 		return nil // unlimited
 	}
 
@@ -681,7 +682,7 @@ func (a *AccessListService) VerifyAccessListCreateLimit(ctx context.Context, tar
 		}
 	}
 
-	if int32(len(lists)) < f.GetEntitlement(teleport.AccessLists).Limit {
+	if int32(len(lists)) < f.GetEntitlement(entitlements.AccessLists).Limit {
 		return nil
 	}
 

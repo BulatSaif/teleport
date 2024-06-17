@@ -31,10 +31,10 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gravitational/teleport"
 	"github.com/gravitational/teleport/api/types/accesslist"
 	"github.com/gravitational/teleport/api/types/header"
 	"github.com/gravitational/teleport/api/types/trait"
+	"github.com/gravitational/teleport/entitlements"
 	"github.com/gravitational/teleport/lib/backend"
 	"github.com/gravitational/teleport/lib/backend/memory"
 	"github.com/gravitational/teleport/lib/modules"
@@ -1168,9 +1168,9 @@ func newAccessListService(t *testing.T, mem *memory.Memory, clock clockwork.Cloc
 
 	modules.SetTestModules(t, &modules.TestModules{
 		TestFeatures: modules.Features{
-			Entitlements: map[teleport.EntitlementKind]modules.EntitlementInfo{
-				teleport.Identity:    {Enabled: igsEnabled},
-				teleport.AccessLists: {Enabled: true, Limit: 1},
+			Entitlements: map[entitlements.EntitlementKind]modules.EntitlementInfo{
+				entitlements.Identity:    {Enabled: igsEnabled},
+				entitlements.AccessLists: {Enabled: true, Limit: 1},
 			},
 		},
 	})
