@@ -1,5 +1,5 @@
 #!/user/bin/env node
-const { TopicContentsFragment } = require('./gen-topic-pages.js');
+const { RedirectChecker } = require('./check-redirects.js');
 const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const process = require('node:process');
@@ -9,27 +9,23 @@ const path = require('node:path');
 const args = yargs(hideBin(process.argv))
   .option('in', {
     describe:
-      'Comma-separated list of root directory paths from which to generate topic page partials. We expect each root directory to include the output in a page called "all-topics.mdx"',
+      'Comma-separated list of root directory paths in which to check for necessary redirects.',
   })
-  .demandOption(['in'])
+  .option('config', {
+    describe: 'path to a docs configuration file with a "redirects" key',
+  })
+  .demandOption(['in', ' config'])
   .help()
   .parse();
 
-const addTopicsForDir = (dirPath, command) => {
-  const frag = new TopicContentsFragment(fs, dirPath, '');
-  const parts = path.parse(dirPath);
-  const newPath = path.join(parts.dir, parts.name + '.mdx');
-  fs.writeFileSync(newPath, frag.makeTopicPage());
-
-  fs.readdirSync(dirPath).forEach(filePath => {
-    const fullPath = path.join(dirPath, filePath);
-    const stats = fs.statSync(fullPath);
-    if (stats.isDirectory()) {
-      addTopicsForDir(fullPath);
-    }
-  });
+const checkDir = (dirPath, command, redirects) => {
+  const checker = new RedirectChecker(fs, dirPath, redirects);
+  // TODO: Call some function to check redirects
 };
 
+const conf = fs.readFileSync(args.config);
+const redirects = JSON.parse(conf).redirects;
+
 args.in.split(',').forEach(p => {
-  addTopicsForDir(p);
+  checkDir(p);
 });
