@@ -37,6 +37,8 @@ import ClustersService from 'teleport/services/clusters';
 import { StoreUserContext } from 'teleport/stores';
 import usersService from 'teleport/services/user';
 
+import TeleportContext from 'teleport/teleportContext';
+
 import {
   StoreParties,
   StoreDocs,
@@ -208,8 +210,8 @@ export default class ConsoleContext {
     });
   }
 
-  logout() {
-    webSession.logout();
+  logout(ctx: TeleportContext) {
+    webSession.logout(false, ctx.storeUser);
   }
 
   createTty(session: Session, mode?: ParticipantMode): Tty {

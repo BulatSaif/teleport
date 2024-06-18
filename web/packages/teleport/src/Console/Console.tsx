@@ -25,6 +25,8 @@ import useAttempt from 'shared/hooks/useAttemptNext';
 
 import AjaxPoller from 'teleport/components/AjaxPoller';
 
+import { useTeleport } from '..';
+
 import { useConsoleContext, useStoreDocs } from './consoleContextProvider';
 import * as stores from './stores/types';
 import Tabs from './Tabs';
@@ -50,6 +52,7 @@ export default function Console() {
   const activeDoc = documents.find(d => d.id === activeDocId);
   const hasSshSessions = storeDocs.getSshDocuments().length > 0;
   const { attempt, run } = useAttempt();
+  const teleportCtx = useTeleport();
 
   React.useEffect(() => {
     run(() => consoleCtx.initStoreUser());
@@ -78,7 +81,7 @@ export default function Console() {
   }
 
   function onLogout() {
-    consoleCtx.logout();
+    consoleCtx.logout(teleportCtx);
   }
 
   const disableNewTab = storeDocs.getNodeDocuments().length > 0;

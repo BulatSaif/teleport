@@ -31,6 +31,8 @@ import { getUrlParameter } from 'teleport/services/history';
 
 import { RecordingType } from 'teleport/services/recordings';
 
+import { useTeleport } from '..';
+
 import ActionBar from './ActionBar';
 import { DesktopPlayer } from './DesktopPlayer';
 import SshPlayer from './SshPlayer';
@@ -41,6 +43,7 @@ const validRecordingTypes = ['ssh', 'k8s', 'desktop'];
 export function Player() {
   const { sid, clusterId } = useParams<UrlPlayerParams>();
   const { search } = useLocation();
+  const ctx = useTeleport();
 
   const recordingType = getUrlParameter(
     'recordingType',
@@ -54,7 +57,7 @@ export function Player() {
   document.title = `Play ${sid} • ${clusterId}`;
 
   function onLogout() {
-    session.logout();
+    session.logout(false, ctx.storeUser);
   }
 
   if (!validRecordingType) {

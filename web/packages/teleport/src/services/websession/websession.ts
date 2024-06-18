@@ -23,6 +23,8 @@ import history from 'teleport/services/history';
 import api from 'teleport/services/api';
 import { KeysEnum, storageService } from 'teleport/services/storageService';
 
+import { StoreUserContext } from 'teleport/stores';
+
 import makeBearerToken from './makeBearerToken';
 import { RenewSessionRequest } from './types';
 
@@ -35,10 +37,27 @@ const logger = Logger.create('services/session');
 let sesstionCheckerTimerId = null;
 
 const session = {
-  logout(rememberLocation = false) {
+  /** logout logs the user out of Teleport, and if SAML SLO is enabled, also log them out of their IdP. */
+  logout(rememberLocation = false, userCtx: StoreUserContext) {
     api.delete(cfg.api.webSessionPath).finally(() => {
-      history.goToLogin(rememberLocation);
+      // If SAML SLO (single logout) is enabled, the user will be redirected to the IdP's SLO URL, after which they will automatically be redirected back
+      // to the login page.
+      if (userCtx?.getIsSamlSloEnabled()) {
+        const sloUrl = userCtx.getSamlSloUrl();
+        window.open(sloUrl, '_self');
+      } else {
+        history.goToLogin(rememberLocation);
+      }
     });
+
+    this.clear();
+  },
+
+  /** logoutWithoutSlo logs the user out of Teleport, but not their SAML IdP. */
+  logoutWithoutSlo(rememberLocation = false) {
+    api
+      .delete(cfg.api.webSessionPath)
+      .finally(() => history.goToLogin(rememberLocation));
 
     this.clear();
   },
@@ -254,7 +273,7 @@ function receiveMessage(event) {
 
   // check if logout was triggered from other tabs
   if (storageService.getBearerToken() === null) {
-    session.logout();
+    session.logoutWithoutSlo();
   }
 
   // check if token is being renewed from another tab
