@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"os"
 	"os/exec"
@@ -1100,7 +1101,6 @@ func ConfigureCommand(ctx *ServerContext, extraFiles ...*os.File) (*exec.Cmd, er
 			ctx.x11rdyw,
 			ctx.errw,
 		},
-		SysProcAttr: new(syscall.SysProcAttr),
 	}
 	// Add extra files if applicable.
 	if len(extraFiles) > 0 {
@@ -1119,13 +1119,12 @@ func ConfigureCommand(ctx *ServerContext, extraFiles ...*os.File) (*exec.Cmd, er
 			return nil, trace.Wrap(err)
 		}
 
+		log := slog.With("uid", credential.Uid, "gid", credential.Gid, "groups", credential.Groups)
 		if os.Getuid() != int(credential.Uid) || os.Getgid() != int(credential.Gid) {
-			cmd.SysProcAttr.Credential = credential
-			log.Debugf("Creating process with UID %v, GID: %v, and Groups: %v.",
-				credential.Uid, credential.Gid, credential.Groups)
+			cmd.SysProcAttr = &syscall.SysProcAttr{Credential: credential}
+			log.DebugContext(ctx.Context, "Creating process with new credentials.")
 		} else {
-			log.Debugf("Creating process with ambient credentials UID %v, GID: %v, Groups: %v.",
-				credential.Uid, credential.Gid, credential.Groups)
+			log.DebugContext(ctx.Context, "Creating process with environment credentials.")
 		}
 	}
 
