@@ -40,6 +40,7 @@ import { LoginClose } from './Login/LoginClose';
 import { Login } from './Login';
 import { Welcome } from './Welcome';
 import { SingleLogoutFailed } from './SingleLogoutFailed';
+import { ActivityChecker } from './components/ActivityChecker';
 
 import { ConsoleWithContext as Console } from './Console';
 import { Player } from './Player';
@@ -68,6 +69,7 @@ const Teleport: React.FC<Props> = props => {
                   <Authenticated>
                     <UserContextProvider>
                       <TeleportContextProvider ctx={ctx}>
+                        <ActivityChecker />
                         <Switch>
                           <Route
                             path={cfg.routes.appLauncher}
