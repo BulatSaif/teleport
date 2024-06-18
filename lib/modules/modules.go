@@ -77,6 +77,10 @@ type Features struct {
 	// *Access* to the feature is gated on the `Policy` flag.
 	// TODO(justinas): remove this field once "TAG enabled" status is moved to a resource in the backend.
 	AccessGraph bool
+	// AccessMonitoringFeature enables the usage of access monitoring.
+	// NOTE: this flag is used to signal that Access Monitoring is *enabled* on a cluster.
+	// *Access* to the feature is gated on the `AccessMonitoring` entitlement.
+	AccessMonitoringFeature bool
 	// --------------- Deprecated Fields
 	// AccessControls enables FIPS access controls
 	// Deprecated
@@ -113,8 +117,9 @@ func (f Features) ToProto() *proto.Features {
 		AccessList: &proto.AccessListFeature{
 			CreateLimit: f.GetEntitlement(entitlements.AccessLists).Limit,
 		},
+		// todo (michellescripts) in phase 2, break out AccessMonitoringFeature and AccessMonitoringEntitlement
 		AccessMonitoring: &proto.AccessMonitoringFeature{
-			Enabled:             f.GetEntitlement(entitlements.AccessMonitoring).Enabled,
+			Enabled:             f.AccessMonitoringFeature, // currently for backwards compatibility until we can separate enabled and entitled
 			MaxReportRangeLimit: f.GetEntitlement(entitlements.AccessMonitoring).Limit,
 		},
 		AccessRequests: &proto.AccessRequestsFeature{
