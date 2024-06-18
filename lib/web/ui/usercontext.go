@@ -70,11 +70,11 @@ type UserContext struct {
 	AllowedSearchAsRoles []string `json:"allowedSearchAsRoles"`
 	// PasswordState specifies whether the user has a password set or not.
 	PasswordSate types.PasswordState `json:"passwordState"`
-	// SSOContext contains information regarding the SSO session, if this the user logged in via an auth connector.
+	// SSOContext contains information regarding the SSO session, if this user is logged in via an auth connector.
 	SSOContext SSOContext `json:"ssoContext,omitempty"`
 }
 
-// SSOContext contains information regarding the SSO session, if this the user logged in via an auth connector.
+// SSOContext contains information regarding the SSO session, if this user is logged in via an auth connector.
 type SSOContext struct {
 	// ConnectorType is the type of the SSO connector, either "saml", "oidc", or "github".
 	ConnectorType string `json:"connectorType,omitempty"`

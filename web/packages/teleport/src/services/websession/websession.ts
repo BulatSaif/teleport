@@ -42,7 +42,7 @@ const session = {
     api.delete(cfg.api.webSessionPath).finally(() => {
       // If SAML SLO (single logout) is enabled, the user will be redirected to the IdP's SLO URL, after which they will automatically be redirected back
       // to the login page.
-      if (userCtx?.getIsSamlSloEnabled()) {
+      if (userCtx?.isSamlSloEnabled()) {
         const sloUrl = userCtx.getSamlSloUrl();
         window.open(sloUrl, '_self');
       } else {
@@ -58,12 +58,6 @@ const session = {
     api
       .delete(cfg.api.webSessionPath)
       .finally(() => history.goToLogin(rememberLocation));
-
-    this.clear();
-  },
-
-  logoutWithoutRedirect() {
-    api.delete(cfg.api.webSessionPath);
 
     this.clear();
   },

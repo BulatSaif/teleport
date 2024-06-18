@@ -28,9 +28,7 @@ export function SingleLogoutFailed() {
   const params = new URLSearchParams(search);
   const connectorName = params.get('connectorName');
 
-  const connectorNameText = connectorName
-    ? connectorName
-    : 'your SAML identity provider.';
+  const connectorNameText = connectorName || 'your SAML identity provider';
   return (
     <>
       <LogoHero />

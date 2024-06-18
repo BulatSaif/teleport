@@ -8629,7 +8629,7 @@ type ExternalIdentity struct {
 	ConnectorID string `protobuf:"bytes,1,opt,name=ConnectorID,proto3" json:"connector_id,omitempty"`
 	// Username is username supplied by external identity provider
 	Username string `protobuf:"bytes,2,opt,name=Username,proto3" json:"username,omitempty"`
-	// SAMLSingleLogoutURL is the SAML Single log-out URL to initiate SAML SLO, if applicable.
+	// SAMLSingleLogoutURL is the SAML Single log-out URL to initiate SAML SLO (single log-out), if applicable.
 	SAMLSingleLogoutURL  string   `protobuf:"bytes,3,opt,name=SAMLSingleLogoutURL,proto3" json:"samlSingleLogoutUrl,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -11614,7 +11614,7 @@ type SAMLConnectorSpecV2 struct {
 	// ClientRedirectSettings defines which client redirect URLs are allowed for
 	// non-browser SSO logins other than the standard localhost ones.
 	ClientRedirectSettings *SSOClientRedirectSettings `protobuf:"bytes,15,opt,name=ClientRedirectSettings,proto3" json:"client_redirect_settings,omitempty"`
-	// SingleLogoutURL is the SAML Single log-out URL to initiate SAML SLO. If this is not provided, SLO is disabled.
+	// SingleLogoutURL is the SAML Single log-out URL to initiate SAML SLO (single log-out). If this is not provided, SLO is disabled.
 	SingleLogoutURL      string   `protobuf:"bytes,16,opt,name=SingleLogoutURL,proto3" json:"single_logout_url,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
