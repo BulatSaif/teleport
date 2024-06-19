@@ -37,7 +37,7 @@ import (
 func TestValidateListenerSocket(t *testing.T) {
 	t.Parallel()
 
-	newSocketFiles := func(t *testing.T) (*uds.Conn, *os.File) {
+	newSocketFiles := func(t *testing.T) (*net.UnixConn, *os.File) {
 		left, right, err := uds.NewSocketpair(uds.SocketTypeStream)
 		require.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestValidateListenerSocket(t *testing.T) {
 	tests := []struct {
 		name        string
 		user        string
-		mutateFiles func(*testing.T, *uds.Conn, *os.File) (*uds.Conn, *os.File)
+		mutateFiles func(*testing.T, *net.UnixConn, *os.File) (*net.UnixConn, *os.File)
 		mutateConn  func(*testing.T, *os.File)
 		assert      require.ErrorAssertionFunc
 	}{
@@ -86,7 +86,7 @@ func TestValidateListenerSocket(t *testing.T) {
 		{
 			name: "socket type not STREAM",
 			user: u.Username,
-			mutateFiles: func(t *testing.T, conn *uds.Conn, file *os.File) (*uds.Conn, *os.File) {
+			mutateFiles: func(t *testing.T, conn *net.UnixConn, file *os.File) (*net.UnixConn, *os.File) {
 				left, right, err := uds.NewSocketpair(uds.SocketTypeDatagram)
 				require.NoError(t, err)
 				listenerFD, err := right.File()
@@ -113,7 +113,7 @@ func TestValidateListenerSocket(t *testing.T) {
 		{
 			name: "listener socket is not listening",
 			user: u.Username,
-			mutateFiles: func(t *testing.T, conn *uds.Conn, file *os.File) (*uds.Conn, *os.File) {
+			mutateFiles: func(t *testing.T, conn *net.UnixConn, file *os.File) (*net.UnixConn, *os.File) {
 				left, right, err := uds.NewSocketpair(uds.SocketTypeStream)
 				require.NoError(t, err)
 				listenerFD, err := right.File()
@@ -142,7 +142,7 @@ func TestValidateListenerSocket(t *testing.T) {
 			if tc.mutateConn != nil {
 				tc.mutateConn(t, listenerFD)
 			}
-			err := validateListenerSocket(scx, conn.UnixConn, listenerFD)
+			err := validateListenerSocket(scx, conn, listenerFD)
 			tc.assert(t, err)
 		})
 	}
