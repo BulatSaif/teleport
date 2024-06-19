@@ -20,6 +20,7 @@ package uds
 
 import (
 	"context"
+	"errors"
 	"net"
 	"os"
 	"path/filepath"
@@ -76,6 +77,12 @@ func (lc *ListenConfig) ListenUnix(ctx context.Context, network, path string) (*
 		// runtime.UnlockOSThread we will just throw away the thread at the end
 		// of this goroutine
 		if err := syscall.Unshare(syscall.CLONE_FS); err != nil {
+			if errors.Is(err, os.ErrPermission) {
+				// just joking around, who needs CLONE_FS (might as well not
+				// trash a thread tho)
+				runtime.UnlockOSThread()
+				return trace.BadParameter("path is too long")
+			}
 			return trace.Wrap(trace.ConvertSystemError(err))
 		}
 
@@ -140,6 +147,12 @@ func (lc *ListenConfig) ListenUnixgram(ctx context.Context, network, path string
 		// runtime.UnlockOSThread we will just throw away the thread at the end
 		// of this goroutine
 		if err := syscall.Unshare(syscall.CLONE_FS); err != nil {
+			if errors.Is(err, os.ErrPermission) {
+				// just joking around, who needs CLONE_FS (might as well not
+				// trash a thread tho)
+				runtime.UnlockOSThread()
+				return trace.BadParameter("unix domain socket path is too long")
+			}
 			return trace.Wrap(trace.ConvertSystemError(err))
 		}
 
@@ -204,6 +217,12 @@ func (d *Dialer) DialUnix(ctx context.Context, network, path string) (*net.UnixC
 		// runtime.UnlockOSThread we will just throw away the thread at the end
 		// of this goroutine
 		if err := syscall.Unshare(syscall.CLONE_FS); err != nil {
+			if errors.Is(err, os.ErrPermission) {
+				// just joking around, who needs CLONE_FS (might as well not
+				// trash a thread tho)
+				runtime.UnlockOSThread()
+				return trace.BadParameter("unix domain socket path is too long")
+			}
 			return trace.Wrap(trace.ConvertSystemError(err))
 		}
 
