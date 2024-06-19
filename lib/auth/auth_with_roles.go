@@ -4571,6 +4571,18 @@ func (a *ServerWithRoles) SetAuthPreference(ctx context.Context, newAuthPref typ
 	if err != nil {
 		msg = err.Error()
 	}
+
+	var adminActionsStatus apievents.AdminActionsMFAStatus
+	oldSecondFactor := storedAuthPref.GetSecondFactor()
+	newSecondFactor := newAuthPref.GetSecondFactor()
+	if oldSecondFactor != newSecondFactor {
+		if newSecondFactor == constants.SecondFactorWebauthn {
+			adminActionsStatus = apievents.AdminActionsMFAStatus_ENABLED
+		} else if oldSecondFactor == constants.SecondFactorWebauthn {
+			adminActionsStatus = apievents.AdminActionsMFAStatus_DISABLED
+		}
+	}
+
 	if auditErr := a.authServer.emitter.EmitAuditEvent(ctx, &apievents.AuthPreferenceUpdate{
 		Metadata: apievents.Metadata{
 			Type: events.AuthPreferenceUpdateEvent,
@@ -4583,6 +4595,7 @@ func (a *ServerWithRoles) SetAuthPreference(ctx context.Context, newAuthPref typ
 			Error:       msg,
 			UserMessage: msg,
 		},
+		AdminActionsMFAChanged: adminActionsStatus,
 	}); auditErr != nil {
 		log.WithError(auditErr).Warn("Failed to emit auth preference update event event.")
 	}
@@ -4608,12 +4621,25 @@ func (a *ServerWithRoles) ResetAuthPreference(ctx context.Context) error {
 		return trace.Wrap(err)
 	}
 
-	_, err = a.authServer.UpsertAuthPreference(ctx, types.DefaultAuthPreference())
+	defaultAuthPref := types.DefaultAuthPreference()
+	_, err = a.authServer.UpsertAuthPreference(ctx, defaultAuthPref)
 
 	var msg string
 	if err != nil {
 		msg = err.Error()
 	}
+
+	var adminActionsStatus apievents.AdminActionsMFAStatus
+	oldSecondFactor := storedAuthPref.GetSecondFactor()
+	newSecondFactor := defaultAuthPref.GetSecondFactor()
+	if oldSecondFactor != newSecondFactor {
+		if newSecondFactor == constants.SecondFactorWebauthn {
+			adminActionsStatus = apievents.AdminActionsMFAStatus_ENABLED
+		} else if oldSecondFactor == constants.SecondFactorWebauthn {
+			adminActionsStatus = apievents.AdminActionsMFAStatus_DISABLED
+		}
+	}
+
 	if auditErr := a.authServer.emitter.EmitAuditEvent(ctx, &apievents.AuthPreferenceUpdate{
 		Metadata: apievents.Metadata{
 			Type: events.AuthPreferenceUpdateEvent,
@@ -4626,6 +4652,7 @@ func (a *ServerWithRoles) ResetAuthPreference(ctx context.Context) error {
 			Error:       msg,
 			UserMessage: msg,
 		},
+		AdminActionsMFAChanged: adminActionsStatus,
 	}); auditErr != nil {
 		log.WithError(auditErr).Warn("Failed to emit auth preference update event event.")
 	}
