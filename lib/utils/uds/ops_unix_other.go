@@ -1,4 +1,4 @@
-//go:build unix && !(darwin && cgo)
+//go:build unix && !(darwin && cgo) && !linux
 
 // Teleport
 // Copyright (C) 2024 Gravitational, Inc.
