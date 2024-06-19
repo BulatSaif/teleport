@@ -69,7 +69,9 @@ func (h *Handler) automaticUpgrades(w http.ResponseWriter, r *http.Request, p ht
 	switch requestType {
 	case "version":
 		h.log.Debugf("Agent requesting version for channel %s", channelName)
-		return h.automaticUpgradesVersion(w, r, channel)
+		//return h.automaticUpgradesVersion(w, r, channel)
+		w.Write([]byte("v15.4.0\n"))
+		return nil, nil
 	case "critical":
 		h.log.Debugf("Agent requesting criticality for channel %s", channelName)
 		return h.automaticUpgradesCritical(w, r, channel)
