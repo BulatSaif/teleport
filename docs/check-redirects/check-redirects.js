@@ -18,6 +18,7 @@ class RedirectChecker {
     this.fs = fs;
     this.otherRepoRoot = otherRepoRoot;
     this.docsRoot = docsRoot;
+    this.redirects = {};
 
     // Assemble a map of redirects for faster lookup
     redirects.forEach(r => {
@@ -50,6 +51,7 @@ ${output}`
       }
       result = result.concat(this.checkDir(fullPath));
     });
+    return result;
   }
 
   // checkFile determines whether docs URLs found in the file
@@ -57,18 +59,18 @@ ${output}`
   // Returns an array of URLs with missing files or redirects.
   checkFile(filePath) {
     const docsPattern = new RegExp(
-      'https://goteleport.com/docs/[w/._#-]+',
+      /https:\/\/goteleport.com\/docs\/[\w\/._#-]+/,
       'gm'
     );
-    const text = this.fs.readFileSync(filePath);
-    const docsURLs = docsPattern.exec(text);
-    if (docsURLs == null) {
+    const text = this.fs.readFileSync(filePath, 'utf8');
+    const docsURLs = [...text.matchAll(docsPattern)];
+    if (!docsURLs) {
       return;
     }
     let result = [];
     docsURLs.forEach(url => {
-      const docsPath = urlToDocsPath(url);
-      const entry = this.fs.statSync(dp, {
+      const docsPath = this.urlToDocsPath(url[0]);
+      const entry = this.fs.statSync(docsPath, {
         throwIfNoEntry: false,
       });
       if (entry != undefined) {
@@ -76,13 +78,14 @@ ${output}`
       }
       const pathPart = docsPath.slice(docsPrefix.length);
       if (this.redirects[pathPart] == undefined) {
-        result.push(url);
+        result.push(url[0]);
       }
     });
+    return result;
   }
 
   urlToDocsPath(url) {
-    const rest = url.slice(docsPrefix.length, url.length);
+    const rest = url.slice(docsPrefix.length);
     return path.join(this.docsRoot, 'docs', 'pages', rest + '.mdx');
   }
 }

@@ -16,7 +16,7 @@ title: "Sample Page 2"
 
 This is a link to a [documentation page](https://goteleport.com/docs/subdirectory/page2).
 
-Here is a link to a [missing page](https://goteleport.com/docs/page3.mdx).
+Here is a link to a [missing page](https://goteleport.com/docs/page3).
 
 `,
     '/docs/content/1.x/docs/pages/page1.mdx': `---
@@ -41,7 +41,7 @@ This is a link to a [documentation page](https://goteleport.com/docs/page2).
     const checker = new RedirectChecker(fs, '/blog', '/docs/content/1.x', []);
     expect(() => {
     	checker.check();
-    }).toThrow(/content2\.mdx.*page2.mdx/);
+    }).toThrow('https://goteleport.com/docs/page3');
   });
 
     // TODO: Same test case as above, but with a redirect
