@@ -1,7 +1,7 @@
 const yaml = require('yaml');
 const path = require('path');
 
-const docsPrefix = "https://goteleport.com/docs";
+const docsPrefix = 'https://goteleport.com/docs';
 // RedirectChecker checks for Teleport docs site domains and paths within a
 // given file tree and determines whether a given docs configuration requires
 // redirects.
@@ -20,27 +20,33 @@ class RedirectChecker {
     this.docsRoot = docsRoot;
 
     // Assemble a map of redirects for faster lookup
-    redirects.forEach(r =>{
-    	this.redirects[r.source] = true
-    })
+    redirects.forEach(r => {
+      this.redirects[r.source] = true;
+    });
   }
 
   check() {
     // TODO: Fill this in
   }
 
+  // checkDir recursively checks for docs URLs with missing docs paths or
+  // redirects at dirPath. It returns an array of missing URLs.
   checkDir(dirPath) {
     const files = this.fs.readDirSync(dirPath, 'utf8');
+    let result = [];
     files.forEach(f => {
       const fullPath = join(dirPath, f);
       const info = this.fs.statSync(fullPath);
       if (!info.isDirectory()) {
-        checkFile(fullPath);
+        result = concat(result, checkFile(fullPath));
       }
-      checkDir(fullPath);
+      result = concat(result, checkDir(fullPath));
     });
   }
 
+  // checkFile determines whether docs URLs found in the file
+  // match either an actual docs file path or a redirect source.
+  // Returns an array of URLs with missing files or redirects.
   checkFile(filePath) {
     const docsPattern = new RegExp(
       'https://goteleport.com/docs/[w/._#-]+',
@@ -51,24 +57,25 @@ class RedirectChecker {
     if (docsURLs == null) {
       return;
     }
-    docsURLs.forEach(url=>{
-    	const docsPath = urlToDocsPath(url);
-    	const entry = this.fs.statSync(dp, {
-	    throwIfNoEntry: false
-	});
-	if (entry != undefined) {
-	    return
-	}
-	const pathPart = docsPath.slice(docsPrefix.length);
-	if(this.redirects[pathPart] == undefined){
-	    // TODO: List errors for easier editing
-	}
+    let result = [];
+    docsURLs.forEach(url => {
+      const docsPath = urlToDocsPath(url);
+      const entry = this.fs.statSync(dp, {
+        throwIfNoEntry: false,
+      });
+      if (entry != undefined) {
+        return;
+      }
+      const pathPart = docsPath.slice(docsPrefix.length);
+      if (this.redirects[pathPart] == undefined) {
+        result.push(url);
+      }
     });
   }
 
-  urlToDocsPath(url){
-      const rest = url.slice(docsPrefix.length, url.length)
-      return path.join(this.docsRoot, "docs", "pages", rest+".mdx")
+  urlToDocsPath(url) {
+    const rest = url.slice(docsPrefix.length, url.length);
+    return path.join(this.docsRoot, 'docs', 'pages', rest + '.mdx');
   }
 }
 
