@@ -1,6 +1,7 @@
 const yaml = require('yaml');
 const path = require('path');
 
+const docsPrefix = "https://goteleport.com/docs";
 // RedirectChecker checks for Teleport docs site domains and paths within a
 // given file tree and determines whether a given docs configuration requires
 // redirects.
@@ -17,7 +18,11 @@ class RedirectChecker {
     this.fs = fs;
     this.otherRepoRoot = otherRepoRoot;
     this.docsRoot = docsRoot;
-    this.redirects = redirects;
+
+    // Assemble a map of redirects for faster lookup
+    redirects.forEach(r =>{
+    	this.redirects[r.source] = true
+    })
   }
 
   check() {
@@ -46,24 +51,23 @@ class RedirectChecker {
     if (docsURLs == null) {
       return;
     }
-    const docsPaths = docsURLs.map(url=>{
-    	return urlToDocsPath(url);
-    });
-
-    docsPaths.forEach(dp=>{
+    docsURLs.forEach(url=>{
+    	const docsPath = urlToDocsPath(url);
     	const entry = this.fs.statSync(dp, {
 	    throwIfNoEntry: false
 	});
 	if (entry != undefined) {
 	    return
 	}
-	// TODO: Look up redirect and throw an error if it doesn't exist.
+	const pathPart = docsPath.slice(docsPrefix.length);
+	if(this.redirects[pathPart] == undefined){
+	    // TODO: List errors for easier editing
+	}
     });
   }
 
   urlToDocsPath(url){
-      const prefix = "https://goteleport.com/docs";
-      const rest = url.slice(prefix.length, url.length)
+      const rest = url.slice(docsPrefix.length, url.length)
       return path.join(this.docsRoot, "docs", "pages", rest+".mdx")
   }
 }
