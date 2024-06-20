@@ -9,6 +9,8 @@ title: "Sample Page 1"
 
 This is a link to a [documentation page](https://goteleport.com/docs/page1).
 
+This is a link to the [index page](https://goteleport.com/docs/).
+
 `,
     '/blog/content2.mdx': `---
 title: "Sample Page 2"
@@ -25,6 +27,10 @@ title: "Sample Page 1"
 `,
     '/docs/content/1.x/docs/pages/subdirectory/page2.mdx': `---
 title: "Sample Page 2"
+---
+`,
+    '/docs/content/1.x/docs/pages/index.mdx': `---
+title: "Index page"
 ---
 `,
   };
@@ -52,5 +58,4 @@ title: "Sample Page 2"
       checker.check();
     }).not.toThrow('https://goteleport.com/docs/page3');
   });
-  // TODO: test for index page
 });
