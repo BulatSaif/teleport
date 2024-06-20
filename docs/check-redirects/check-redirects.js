@@ -26,7 +26,14 @@ class RedirectChecker {
   }
 
   check() {
-    // TODO: Fill this in
+    const results = checkDir(this.otherRepoRoot);
+    if (results.length > 0) {
+      const output = '- ' + results.join('\n - ');
+      throw new Error(
+        `Found docs URLs in ${this.otherRepoRoot} with no corresponding docs path or redirect:
+${output}`
+      );
+    }
   }
 
   // checkDir recursively checks for docs URLs with missing docs paths or
