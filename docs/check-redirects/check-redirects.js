@@ -26,8 +26,8 @@ class RedirectChecker {
   }
 
   check() {
-    const results = checkDir(this.otherRepoRoot);
-    if (results.length > 0) {
+    const results = this.checkDir(this.otherRepoRoot);
+    if (results != undefined && results.length > 0) {
       const output = '- ' + results.join('\n - ');
       throw new Error(
         `Found docs URLs in ${this.otherRepoRoot} with no corresponding docs path or redirect:
@@ -39,15 +39,16 @@ ${output}`
   // checkDir recursively checks for docs URLs with missing docs paths or
   // redirects at dirPath. It returns an array of missing URLs.
   checkDir(dirPath) {
-    const files = this.fs.readDirSync(dirPath, 'utf8');
+    const files = this.fs.readdirSync(dirPath, 'utf8');
     let result = [];
     files.forEach(f => {
-      const fullPath = join(dirPath, f);
+      const fullPath = path.join(dirPath, f);
       const info = this.fs.statSync(fullPath);
       if (!info.isDirectory()) {
-        result = concat(result, checkFile(fullPath));
+        result = result.concat(this.checkFile(fullPath));
+        return;
       }
-      result = concat(result, checkDir(fullPath));
+      result = result.concat(this.checkDir(fullPath));
     });
   }
 
