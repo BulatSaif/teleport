@@ -1,7 +1,7 @@
 const yaml = require('yaml');
 const path = require('path');
 
-const docsPrefix = 'https://goteleport.com/docs';
+const teleportDomain = 'https://goteleport.com';
 // RedirectChecker checks for Teleport docs site domains and paths within a
 // given file tree and determines whether a given docs configuration requires
 // redirects.
@@ -76,7 +76,11 @@ ${output}`
       if (entry != undefined) {
         return;
       }
-      const pathPart = docsPath.slice(docsPrefix.length);
+      let pathPart = url[0].slice(teleportDomain.length);
+      if (pathPart[pathPart.length - 1] != '/') {
+        pathPart += '/';
+      }
+
       if (this.redirects[pathPart] == undefined) {
         result.push(url[0]);
       }
@@ -85,7 +89,7 @@ ${output}`
   }
 
   urlToDocsPath(url) {
-    const rest = url.slice(docsPrefix.length);
+    const rest = url.slice(teleportDomain.length + '/docs/');
     return path.join(this.docsRoot, 'docs', 'pages', rest + '.mdx');
   }
 }

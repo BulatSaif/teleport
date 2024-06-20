@@ -52,4 +52,5 @@ title: "Sample Page 2"
       checker.check();
     }).not.toThrow('https://goteleport.com/docs/page3');
   });
+  // TODO: test for index page
 });
